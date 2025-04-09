@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\DraftPekerjaanController;
+use App\Http\Controllers\TransaksiDraftPekerjaanController;
 use App\Http\Controllers\NeracaController;
 use App\Http\Controllers\LaporanKeuanganController;
 
@@ -17,18 +18,14 @@ use App\Http\Controllers\LaporanKeuanganController;
 // Public
 Route::redirect('/', '/login');
 
-// Authentication
 Route::middleware('guest')->group(function () {
     Route::view('/login', 'auth.login')->name('auth.login');
     Route::post('/login', [AuthController::class, 'login'])->name('auth.login.post');
 });
 
-// Logout
-Route::post('/logout', [AuthController::class, 'logout'])
-    ->middleware('auth')
-    ->name('auth.logout');
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('auth.logout');
 
-// Dashboard redirect by role
+// Dashboard
 Route::middleware('auth')->get('/dashboard', function () {
     return match(auth()->user()->role) {
         'direktur' => redirect()->route('dashboard.direktur'),
@@ -39,104 +36,101 @@ Route::middleware('auth')->get('/dashboard', function () {
     };
 })->name('dashboard');
 
+Route::middleware(['auth', 'role:direktur'])->get('/dashboard/direktur', [DashboardController::class, 'direktur'])->name('dashboard.direktur');
+Route::middleware(['auth', 'role:admin'])->get('/dashboard/admin', [DashboardController::class, 'admin'])->name('dashboard.admin');
+Route::middleware(['auth', 'role:akuntan'])->get('/dashboard/akuntan', [DashboardController::class, 'akuntan'])->name('dashboard.akuntan');
+Route::middleware(['auth', 'role:pengawas'])->get('/dashboard/pengawas', [DashboardController::class, 'pengawas'])->name('dashboard.pengawas');
 
-
-
-// Individual dashboard pages
-Route::middleware(['auth','role:direktur'])->get('/dashboard/direktur', [DashboardController::class, 'direktur'])->name('dashboard.direktur');
-Route::middleware(['auth','role:admin'])->get('/dashboard/admin', [DashboardController::class, 'admin'])->name('dashboard.admin');
-Route::middleware(['auth','role:akuntan'])->get('/dashboard/akuntan', [DashboardController::class, 'akuntan'])->name('dashboard.akuntan');
-Route::middleware(['auth','role:pengawas'])->get('/dashboard/pengawas', [DashboardController::class, 'pengawas'])->name('dashboard.pengawas');
-
-
-
-// Shared overview
-Route::middleware(['auth','role:direktur|admin|akuntan|pengawas'])
+Route::middleware(['auth', 'role:direktur|admin|akuntan|pengawas'])
     ->get('/dashboard/overview', [DashboardController::class, 'overview'])
     ->name('dashboard.overview');
 
-// full CRUD only for akuntan
-Route::middleware(['auth','role:akuntan'])->group(function () {
-    //karyawan
-    Route::get('/karyawan/create', [KaryawanController::class, 'create'])->name('karyawan.create');
-    Route::post('/karyawan', [KaryawanController::class, 'store'])->name('karyawan.store');
-    Route::get('/karyawan/{karyawan}/edit', [KaryawanController::class, 'edit'])->name('karyawan.edit');
-    Route::put('/karyawan/{karyawan}', [KaryawanController::class, 'update'])->name('karyawan.update');
-    Route::post('/karyawan/{karyawan}', [KaryawanController::class, 'destroy'])->name('karyawan.destroy');
-    
-    //draft pekerjaan
-    Route::get('/draft-pekerjaan/create', [DraftPekerjaanController::class, 'create'])->name('draft-pekerjaan.create');
-    Route::post('/draft-pekerjaan/store', [DraftPekerjaanController::class, 'store'])->name('draft-pekerjaan.store');
-    Route::get('/draft-pekerjaan/{draft_pekerjaan}/edit', [DraftPekerjaanController::class, 'edit'])
-    ->where('draft_pekerjaan', '[0-9]+')
-    ->name('draft-pekerjaan.edit');
-    Route::put('/draft-pekerjaan/{karyawan}', [DraftPekerjaanController::class, 'update'])->name('draft-pekerjaan.update');
-    Route::post('/draft-pekerjaan/{karyawan}', [DraftPekerjaanController::class, 'destroy'])->name('draft-pekerjaan.destroy');
-    Route::post('/draft-pekerjaan/update-checkbox/{id}', [DraftPekerjaanController::class, 'updateCheckbox']);
 
-    //neraca
-    Route::get('/data-neraca/create', [NeracaController::class, 'create'])->name('data-neraca.create');
-    Route::post('/data-neraca', [NeracaController::class, 'store'])->name('data-neraca.store');
-    Route::get('/data-neraca/{id}/edit', [NeracaController::class, 'edit'])->name('data-neraca.edit');
-    Route::put('/data-neraca/{id}', [NeracaController::class, 'update'])->name('data-neraca.update');
-    Route::post('/data-neraca/{id}', [NeracaController::class, 'destroy'])->name('data-neraca.destroy');
-    Route::post('/data-neraca/update-checkbox/{id}', [NeracaController::class, 'updateCheckbox']);
+// ========================== Fitur: Karyawan ==========================
+Route::prefix('karyawan')->name('karyawan.')->middleware('auth')->group(function () {
+    Route::middleware('role:akuntan')->group(function () {
+        Route::get('create', [KaryawanController::class, 'create'])->name('create');
+        Route::post('/', [KaryawanController::class, 'store'])->name('store');
+        Route::get('{karyawan}/edit', [KaryawanController::class, 'edit'])->name('edit');
+        Route::put('{karyawan}', [KaryawanController::class, 'update'])->name('update');
+        Route::post('{karyawan}', [KaryawanController::class, 'destroy'])->name('destroy');
+    });
 
-    //laporan keuangan
-    Route::get('/laporan-keuangan/create', [LaporanKeuanganController::class, 'create'])->name('laporan-keuangan.create');
-    Route::post('/laporan-keuangan', [LaporanKeuanganController::class, 'store'])->name('laporan-keuangan.store');
-    Route::get('/laporan-keuangan/{id}/edit', [LaporanKeuanganController::class, 'edit'])->name('laporan-keuangan.edit');
-    Route::put('/laporan-keuangan/{id}', [LaporanKeuanganController::class, 'update'])->name('laporan-keuangan.update');
-    Route::post('/laporan-keuangan/{id}', [LaporanKeuanganController::class, 'destroy'])->name('laporan-keuangan.destroy');
+    Route::middleware('role:direktur|admin|akuntan|pengawas')->group(function () {
+        Route::get('/', [KaryawanController::class, 'index'])->name('index');
+        Route::get('search', [KaryawanController::class, 'search'])->name('search');
+        Route::get('{karyawan}', [KaryawanController::class, 'show'])->name('show');
+    });
 });
 
-// index & show for all roles
-Route::middleware(['auth','role:direktur|admin|akuntan|pengawas'])->group(function () {
-    //karyawan
-    Route::get('/karyawan', [KaryawanController::class, 'index'])->name('karyawan.index');
-    Route::get('/karyawan/search', [KaryawanController::class, 'search'])->name('karyawan.search');
-    Route::get('/karyawan/{karyawan}', [KaryawanController::class, 'show'])
-    ->where('karyawan', '[0-9]+') // Hanya menangkap angka
-    ->name('karyawan.show');
-    
-    //draft pekerjaan
-    Route::get('/draft-pekerjaan', [DraftPekerjaanController::class, 'index'])->name('draft-pekerjaan.index');
-    Route::get('/draft-pekerjaan/search', [DraftPekerjaanController::class, 'search'])->name('draft-pekerjaan.search');
-    Route::get('/draft-pekerjaan/{draft_pekerjaan}', [DraftPekerjaanController::class, 'show'])
-    ->where('draft_pekerjaan', '[0-9]+')
-    ->name('draft-pekerjaan.show');
+// ========================== Fitur: Draft Pekerjaan ==========================
+Route::prefix('draft-pekerjaan')->name('draft-pekerjaan.')->middleware('auth')->group(function () {
+    Route::middleware('role:akuntan|pengawas')->group(function () {
+        Route::get('create', [DraftPekerjaanController::class, 'create'])->name('create');
+        Route::post('store', [DraftPekerjaanController::class, 'store'])->name('store');
+        Route::get('{draft_pekerjaan}/edit', [DraftPekerjaanController::class, 'edit'])->name('edit');
+        Route::put('{draft_pekerjaan}', [DraftPekerjaanController::class, 'update'])->name('update');
+        Route::post('{draft_pekerjaan}', [DraftPekerjaanController::class, 'destroy'])->name('destroy');
+        Route::post('update-checkbox/{draft_pekerjaan}', [DraftPekerjaanController::class, 'updateCheckbox'])->name('update-checkbox');
+    });
 
-    //neraca
-    Route::get('/data-neraca', [NeracaController::class, 'index'])->name('data-neraca.index');
-    Route::get('/data-neraca/search', [NeracaController::class, 'search'])->name('data-neraca.search');
-    Route::get('/data-neraca/{id}', [NeracaController::class, 'show'])->name('data-neraca.show');
-    
-    //neraca
-    Route::get('/laporan-keuangan', [LaporanKeuanganController::class, 'index'])->name('laporan-keuangan.index');
-    Route::get('/laporan-keuangan/search', [LaporanKeuanganController::class, 'search'])->name('laporan-keuangan.search');
-    Route::get('/laporan-keuangan/{id}', [LaporanKeuanganController::class, 'show'])->name('laporan-keuangan.show');
-
+    Route::middleware('role:direktur|admin|akuntan|pengawas')->group(function () {
+        Route::get('/', [DraftPekerjaanController::class, 'index'])->name('index');
+        Route::get('search', [DraftPekerjaanController::class, 'search'])->name('search');
+        Route::get('{draft_pekerjaan}', [DraftPekerjaanController::class, 'show'])->name('show');
+    });
 });
 
+// ========================== Fitur: Transaksi Draft Pekerjaan ==========================
+Route::prefix('transaksi-draft-pekerjaan')->name('transaksi-draft-pekerjaan.')->middleware('auth')->group(function () {
+    Route::middleware('role:akuntan')->group(function () {
+        Route::get('create', [TransaksiDraftPekerjaanController::class, 'create'])->name('create');
+        Route::post('store', [TransaksiDraftPekerjaanController::class, 'store'])->name('store');
+        Route::get('{transaksi_draft_pekerjaan}/edit', [TransaksiDraftPekerjaanController::class, 'edit'])->name('edit');
+        Route::put('{transaksi_draft_pekerjaan}', [TransaksiDraftPekerjaanController::class, 'update'])->name('update');
+        Route::post('{transaksi_draft_pekerjaan}', [TransaksiDraftPekerjaanController::class, 'destroy'])->name('destroy');
+    });
 
-// full CRUD only for direkrue
-Route::middleware(['auth','role:direktur'])->group(function () {
-    Route::put('/laporan-keuangan/{id}/status', [LaporanKeuanganController::class, 'updateStatus'])->name('laporan-keuangan.update-status');
+    Route::middleware('role:direktur|admin|akuntan|pengawas')->group(function () {
+        Route::get('/', [TransaksiDraftPekerjaanController::class, 'index'])->name('index');
+        Route::get('search', [TransaksiDraftPekerjaanController::class, 'search'])->name('search');
+        Route::get('{transaksi_draft_pekerjaan}', [TransaksiDraftPekerjaanController::class, 'show'])->name('show');
+    });
 });
 
+// ========================== Fitur: Neraca ==========================
+Route::prefix('data-neraca')->name('data-neraca.')->middleware('auth')->group(function () {
+    Route::middleware('role:akuntan')->group(function () {
+        Route::get('create', [NeracaController::class, 'create'])->name('create');
+        Route::post('/', [NeracaController::class, 'store'])->name('store');
+        Route::get('{id}/edit', [NeracaController::class, 'edit'])->name('edit');
+        Route::put('{id}', [NeracaController::class, 'update'])->name('update');
+        Route::post('{id}', [NeracaController::class, 'destroy'])->name('destroy');
+        Route::post('update-checkbox/{id}', [NeracaController::class, 'updateCheckbox'])->name('update-checkbox');
+    });
 
-// full CRUD only for pengawas
-Route::middleware(['auth','role:pengawas'])->group(function () {
-
-    //draft pekerjaan
-    Route::get('/draft-pekerjaan/create', [DraftPekerjaanController::class, 'create'])->name('draft-pekerjaan.create');
-    Route::post('/draft-pekerjaan/store', [DraftPekerjaanController::class, 'store'])->name('draft-pekerjaan.store');
-    Route::get('/draft-pekerjaan/{draft_pekerjaan}/edit', [DraftPekerjaanController::class, 'edit'])
-    ->where('draft_pekerjaan', '[0-9]+')
-    ->name('draft-pekerjaan.edit');
-    Route::put('/draft-pekerjaan/{karyawan}', [DraftPekerjaanController::class, 'update'])->name('draft-pekerjaan.update');
-    Route::post('/draft-pekerjaan/{karyawan}', [DraftPekerjaanController::class, 'destroy'])->name('draft-pekerjaan.destroy');
-    Route::post('/draft-pekerjaan/update-checkbox/{id}', [DraftPekerjaanController::class, 'updateCheckbox']);
-
+    Route::middleware('role:direktur|admin|akuntan|pengawas')->group(function () {
+        Route::get('/', [NeracaController::class, 'index'])->name('index');
+        Route::get('search', [NeracaController::class, 'search'])->name('search');
+        Route::get('{id}', [NeracaController::class, 'show'])->name('show');
+    });
 });
 
+// ========================== Fitur: Laporan Keuangan ==========================
+Route::prefix('laporan-keuangan')->name('laporan-keuangan.')->middleware('auth')->group(function () {
+    Route::middleware('role:akuntan')->group(function () {
+        Route::get('create', [LaporanKeuanganController::class, 'create'])->name('create');
+        Route::post('/', [LaporanKeuanganController::class, 'store'])->name('store');
+        Route::get('{id}/edit', [LaporanKeuanganController::class, 'edit'])->name('edit');
+        Route::put('{id}', [LaporanKeuanganController::class, 'update'])->name('update');
+        Route::post('{id}', [LaporanKeuanganController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::middleware('role:direktur')->put('{id}/status', [LaporanKeuanganController::class, 'updateStatus'])->name('update-status');
+
+    Route::middleware('role:direktur|admin|akuntan|pengawas')->group(function () {
+        Route::get('/', [LaporanKeuanganController::class, 'index'])->name('index');
+        Route::get('search', [LaporanKeuanganController::class, 'search'])->name('search');
+        Route::get('{id}', [LaporanKeuanganController::class, 'show'])->name('show');
+    });
+});

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\DraftPekerjaan;
+use App\Models\TransaksiDraftPekerjaan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -44,27 +45,35 @@ class DraftPekerjaanController extends Controller
                 'dokumen_penawaran' => 'nullable|file|mimes:pdf,doc,docx,xls|max:2048',
                 'alamat_proyek'     => 'required|string',
             ]);
-    
+
             // Buat code_draft unik
             $validated['code_draft'] = 'DRAFT-' . Str::upper(Str::random(8));
-    
+
             // Upload dokumen penawaran jika ada
             if ($request->hasFile('dokumen_penawaran')) {
                 $validated['dokumen_penawaran'] = $request->file('dokumen_penawaran')->store('dokumen_penawaran', 'public');
             } else {
                 $validated['dokumen_penawaran'] = null;
             }
-    
-            // Simpan data ke database
-            DraftPekerjaan::create($validated);
-    
+
+            // Simpan draft pekerjaan ke DB
+            $draft = DraftPekerjaan::create($validated);
+
+            // Buat transaksi otomatis terkait draft tersebut
+            TransaksiDraftPekerjaan::create([
+                'draft_pekerjaan_id' => $draft->id,
+                'nilai_pekerjaan' => rand(100000000, 500000000),
+                'nilai_dpp' => rand(80000000, 490000000),
+                'nilai_ppn' => rand(5000000, 10000000),
+                'nilai_pph_final' => rand(2000000, 8000000),
+                'nilai_bersih_pekerjaan' => rand(85000000, 495000000),
+            ]);
+
             return redirect()->route('draft-pekerjaan.index')->with('success', 'Draft Pekerjaan berhasil dibuat!');
-        
         } catch (\Exception $e) {
             // Log error untuk debugging
             Log::error('Gagal menyimpan Draft Pekerjaan: ' . $e->getMessage());
-    
-            // Redirect kembali dengan pesan error
+
             return redirect()->back()->withErrors(['failed' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi!'])->withInput();
         }
     }
@@ -137,18 +146,23 @@ class DraftPekerjaanController extends Controller
     public function destroy(string $id)
     {
         try {
-            // Cari data berdasarkan ID
+            // Cari draft pekerjaan
             $draftPekerjaan = DraftPekerjaan::findOrFail($id);
-    
-            // Update kolom is_deleted menjadi true (1)
+
+            // Soft delete draft
             $draftPekerjaan->update(['is_deleted' => true]);
-    
-            return redirect()->route('draft-pekerjaan.index')->with('success', 'Draft Pekerjaan berhasil dinonaktifkan!');
+
+            // Update transaksi yang terkait
+            TransaksiDraftPekerjaan::where('draft_pekerjaan_id', $id)
+                ->update(['is_deleted' => true]);
+
+            return redirect()->route('draft-pekerjaan.index')->with('success', 'Draft Pekerjaan & Transaksi terkait berhasil dinonaktifkan!');
         } catch (\Exception $e) {
             \Log::error('Gagal menghapus Draft Pekerjaan: ' . $e->getMessage());
             return back()->with('failed', 'Terjadi kesalahan saat menonaktifkan Draft Pekerjaan.');
         }
     }
+
 
     public function search(Request $request)
     {

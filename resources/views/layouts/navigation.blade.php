@@ -23,6 +23,10 @@
               <p class="mr-2" /> Draft Pekerjaan </p>
             </x-nav-link>
 
+            <x-nav-link href="{{ route('transaksi-draft-pekerjaan.index') }}" :active="request()->routeIs('transaksi-draft-pekerjaan.*')">
+              <p class="mr-2" /> Transaksi Draft Pekerjaan </p>
+            </x-nav-link>
+
             <x-nav-link href="{{ route('data-neraca.index') }}" :active="request()->routeIs('data-neraca.*')">
               <p class="mr-2" /> Data Neraca </p>
             </x-nav-link>

@@ -40,4 +40,10 @@ class DraftPekerjaan extends Model
     {
         return $query->where('is_deleted', false);
     }
+
+    public function transaksi()
+    {
+        return $this->hasOne(TansaksiDraftPekerjaan::class, 'draft_pekerjaan_id');
+    }
+
 }

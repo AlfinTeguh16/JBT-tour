@@ -136,6 +136,8 @@
 </section>
 
 <script>
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+
 document.addEventListener("DOMContentLoaded", function() {
     let searchTimer;
 
@@ -212,6 +214,7 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 <script>
+
     document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll(".rowCheckbox").forEach(function (checkbox) {
             checkbox.addEventListener("change", function () {
@@ -242,7 +245,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         });
     });
-    </script>
+</script>
     
 
 @endsection
