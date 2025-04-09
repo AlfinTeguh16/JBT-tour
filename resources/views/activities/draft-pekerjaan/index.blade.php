@@ -138,15 +138,14 @@
 <script>
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     let searchTimer;
 
-    window.ajaxSearch = function() {
+    window.ajaxSearch = function () {
         clearTimeout(searchTimer);
         searchTimer = setTimeout(() => {
             const keyword = document.getElementById('search').value;
-            const url = "{{ route('draft-pekerjaan.search') }}"; 
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+            const url = "{{ route('draft-pekerjaan.search') }}";
 
             fetch(`${url}?keyword=${encodeURIComponent(keyword)}`, {
                 headers: {
@@ -157,44 +156,52 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .then(response => response.json())
             .then(data => {
-                let tbody = document.getElementById('dataDraftPekerjaan');
-                tbody.innerHTML = ""; // Kosongkan isi tabel sebelum memperbarui
+                const tbody = document.getElementById('dataDraftPekerjaan');
+                tbody.innerHTML = "";
 
                 if (data.length > 0) {
                     data.forEach((item, index) => {
-                        let tr = document.createElement('tr');
+                        const tr = document.createElement('tr');
                         tr.classList.add('hover:bg-gray-50');
 
                         let aksiButtons = `
                             <a href="/draft-pekerjaan/${item.id}" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-blue-500 text-white hover:bg-blue-600">Detail</a>
                         `;
 
-                        if (@json(auth()->user()->role === 'akuntan')) {
-                            aksiButtons += `
-                                <a href="/draft-pekerjaan/${item.id}/edit" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-yellow-400 text-white hover:bg-yellow-500">Edit</a>
-                                <button @click="open = true; target = '${item.id}'" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-red-500 text-white hover:bg-red-600">
-                                    Hapus
-                                </button>
-                            `;
-                        }
+                        @if(in_array(auth()->user()->role, ['akuntan', 'pengawas']))
+                        aksiButtons += `
+                            <a href="/draft-pekerjaan/${item.id}/edit" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-yellow-400 text-white hover:bg-yellow-500">Edit</a>
+                            <button onclick="confirmDelete(${item.id})" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-red-500 text-white hover:bg-red-600">
+                                Hapus
+                            </button>
+                        `;
+                        @endif
 
                         tr.innerHTML = `
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${index + 1}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">${item.id_draft-pekerjaan}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">${item.nama}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">${item.email}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">${item.no_telepon}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm space-x-1">${aksiButtons}</td>
+                            <td class="px-6 py-4 text-sm">
+                                <input type="checkbox" class="selectAllRow form-checkbox h-5 text-primary border-gray-300 rounded" data-row="${item.id}">
+                            </td>
+                            <td class="px-6 py-4 text-sm">${index + 1}</td>
+                            <td class="px-6 py-4 text-sm">${item.code_draft}</td>
+                            <td class="px-6 py-4 text-sm">${item.nama_pekerjaan}</td>
+                            <td class="px-6 py-4 text-sm">${item.instansi}</td>
+                            <td class="px-6 py-4 text-center text-sm space-x-1">${aksiButtons}</td>
                         `;
 
                         tbody.appendChild(tr);
                     });
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-sm text-gray-500 py-4">Data tidak ditemukan</td></tr>`;
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+            });
         }, 500);
     };
 });
+</script>
+
 
 
 //untuk select 1 row

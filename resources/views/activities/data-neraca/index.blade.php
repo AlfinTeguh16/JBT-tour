@@ -124,14 +124,14 @@
 </section>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     let searchTimer;
 
-    window.ajaxSearch = function() {
+    window.ajaxSearch = function () {
         clearTimeout(searchTimer);
         searchTimer = setTimeout(() => {
             const keyword = document.getElementById('search').value;
-            const url = "{{ route('data-neraca.search') }}"; 
+            const url = "{{ route('data-neraca.search') }}";
             const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
             fetch(`${url}?keyword=${encodeURIComponent(keyword)}`, {
@@ -143,36 +143,45 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .then(response => response.json())
             .then(data => {
-                let tbody = document.getElementById('dataDraftPekerjaan');
-                tbody.innerHTML = ""; // Kosongkan isi tabel sebelum memperbarui
+                const tbody = document.getElementById('dataNeraca');
+                tbody.innerHTML = "";
 
                 if (data.length > 0) {
                     data.forEach((item, index) => {
-                        let tr = document.createElement('tr');
+                        const tr = document.createElement('tr');
                         tr.classList.add('hover:bg-gray-50');
 
                         let aksiButtons = `
                             <a href="/data-neraca/${item.id}" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-blue-500 text-white hover:bg-blue-600">Detail</a>
                         `;
 
-                        if (@json(auth()->user()->role === 'akuntan')) {
-                            aksiButtons += `
-                                <a href="/data-neraca/${item.id}/edit" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-yellow-400 text-white hover:bg-yellow-500">Edit</a>
-                                <button @click="open = true; target = '${item.id}'" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-red-500 text-white hover:bg-red-600">
-                                    Hapus
-                                </button>
-                            `;
-                        }
+                        @if(auth()->user()->role === 'akuntan')
+                        aksiButtons += `
+                            <a href="/data-neraca/${item.id}/edit" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-yellow-400 text-white hover:bg-yellow-500">Edit</a>
+                            <button onclick="openDeleteModal(${item.id})" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-red-500 text-white hover:bg-red-600">
+                                Hapus
+                            </button>
+                        `;
+                        @endif
 
                         tr.innerHTML = `
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${index + 1}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">${item.id_draft-neraca}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <input type="checkbox" class="selectAllRow w-full mx-auto rowCheckbox form-checkbox h-5 text-primary focus:ring-primary border-gray-300 rounded" data-row="${item.id}">
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">${index + 1}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">${item.bulan}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm"><input type="checkbox" class="w-full mx-auto rowCheckbox form-checkbox h-5 text-primary focus:ring-primary border-gray-300 rounded" ${item.data_karyawan == 1 ? 'checked' : ''}></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm"><input type="checkbox" class="w-full mx-auto rowCheckbox form-checkbox h-5 text-primary focus:ring-primary border-gray-300 rounded" ${item.draft_pekerjaan == 1 ? 'checked' : ''}></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm"><input type="checkbox" class="w-full mx-auto rowCheckbox form-checkbox h-5 text-primary focus:ring-primary border-gray-300 rounded" ${item.transaksi_draft_pekerjaan == 1 ? 'checked' : ''}></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm"><input type="checkbox" class="w-full mx-auto rowCheckbox form-checkbox h-5 text-primary focus:ring-primary border-gray-300 rounded" ${item.status_transaksi == 1 ? 'checked' : ''}></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm"><input type="checkbox" class="w-full mx-auto rowCheckbox form-checkbox h-5 text-primary focus:ring-primary border-gray-300 rounded" ${item.status_draft_pekerjaan == 1 ? 'checked' : ''}></td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm space-x-1">${aksiButtons}</td>
                         `;
 
                         tbody.appendChild(tr);
                     });
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="9" class="text-center text-sm text-gray-500 py-4">Data tidak ditemukan</td></tr>`;
                 }
             })
             .catch(error => console.error('Error:', error));

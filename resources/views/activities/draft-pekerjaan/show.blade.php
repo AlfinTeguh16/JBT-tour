@@ -40,9 +40,10 @@
       <div>
           <p class="text-sm text-gray-500">Status Pekerjaan</p>
           <p class="mt-1 text-lg font-medium text-gray-800">
-              <span class="px-2 py-1 rounded {{ $draftPekerjaan->status_pekerjaan == 'Selesai' ? 'bg-green-500 text-white' : 'bg-yellow-700 text-white' }}">
-                  {{ $draftPekerjaan->status_pekerjaan ?? 'Belum Selesai' }}
-              </span>
+            <span class="px-2 py-1 rounded 
+                {{ $draftPekerjaan->status_pekerjaan == 1 ? 'bg-green-700 text-white' : 'bg-yellow-700 text-white' }}">
+                {{ $draftPekerjaan->status_pekerjaan == 1 ? 'Selesai' : 'Belum Selesai' }}
+        </span>
           </p>
       </div>
       <div>
