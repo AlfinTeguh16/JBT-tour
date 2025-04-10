@@ -8,6 +8,7 @@ use App\Http\Controllers\DraftPekerjaanController;
 use App\Http\Controllers\TransaksiDraftPekerjaanController;
 use App\Http\Controllers\NeracaController;
 use App\Http\Controllers\LaporanKeuanganController;
+use App\Http\Controllers\ArusKasController;
 
 /*
 |--------------------------------------------------------------------------
@@ -132,5 +133,42 @@ Route::prefix('laporan-keuangan')->name('laporan-keuangan.')->middleware('auth')
         Route::get('/', [LaporanKeuanganController::class, 'index'])->name('index');
         Route::get('search', [LaporanKeuanganController::class, 'search'])->name('search');
         Route::get('{id}', [LaporanKeuanganController::class, 'show'])->name('show');
+    });
+});
+
+// ========================== Fitur: Arus Kas ==========================
+Route::prefix('arus-kas')->name('arus-kas.')->middleware('auth')->group(function () {
+
+    // 👨‍💼 Role: Akuntan - CRUD
+    Route::middleware('role:akuntan')->group(function () {
+        Route::get('create', [ArusKasController::class, 'create'])->name('create');
+        Route::post('/', [ArusKasController::class, 'store'])->name('store');
+        Route::get('{id}/edit', [ArusKasController::class, 'edit'])->name('edit');
+        Route::put('{id}', [ArusKasController::class, 'update'])->name('update');
+        Route::post('{id}', [ArusKasController::class, 'destroy'])->name('destroy');
+    });
+
+    // 📊 Role: Semua (yang diizinkan) - View & Search
+    Route::middleware('role:akuntan')->group(function () {
+        Route::get('/', [ArusKasController::class, 'index'])->name('index');
+        Route::get('search', [ArusKasController::class, 'search'])->name('search');
+        Route::get('{id}', [ArusKasController::class, 'show'])->name('show');
+    });
+});
+
+// ========================== Fitur: Laba Rugi ==========================
+Route::prefix('laba-rugi')->name('laba-rugi.')->middleware('auth')->group(function () {
+    Route::middleware('role:akuntan')->group(function () {
+        Route::get('create', [LabaRugiController::class, 'create'])->name('create');
+        Route::post('/', [LabaRugiController::class, 'store'])->name('store');
+        Route::get('{id}/edit', [LabaRugiController::class, 'edit'])->name('edit');
+        Route::put('{id}', [LabaRugiController::class, 'update'])->name('update');
+        Route::post('{id}', [LabaRugiController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::middleware('role:direktur|admin|akuntan|pengawas')->group(function () {
+        Route::get('/', [LabaRugiController::class, 'index'])->name('index');
+        Route::get('search', [LabaRugiController::class, 'search'])->name('search');
+        Route::get('{id}', [LabaRugiController::class, 'show'])->name('show');
     });
 });
