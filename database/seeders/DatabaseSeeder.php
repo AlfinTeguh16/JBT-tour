@@ -20,7 +20,8 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             DraftPekerjaanSeeder::class,
             NeracaSeeder::class,
-            ArusKasSeeder::class
+            ArusKasSeeder::class,
+            LabaRugiSeeder::class,
         ]);
     }
 }

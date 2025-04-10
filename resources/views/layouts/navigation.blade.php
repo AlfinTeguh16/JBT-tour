@@ -39,6 +39,10 @@
               <p class="mr-2" /> Arus Kas </p>
             </x-nav-link>
 
+            <x-nav-link href="{{ route('laba-rugi.index') }}" :active="request()->routeIs('laba-rugi.*')">
+              <p class="mr-2" /> Laba Rugi </p>
+            </x-nav-link>
+
           @elseif(Auth::user()->role === 'admin')
             <x-nav-link href="{{ route('karyawan.index') }}" :active="request()->routeIs('karyawan.*')">
               <p class="mr-2" /> Data Karyawan </p>

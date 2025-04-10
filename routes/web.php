@@ -9,6 +9,7 @@ use App\Http\Controllers\TransaksiDraftPekerjaanController;
 use App\Http\Controllers\NeracaController;
 use App\Http\Controllers\LaporanKeuanganController;
 use App\Http\Controllers\ArusKasController;
+use App\Http\Controllers\LabaRugiController;
 
 /*
 |--------------------------------------------------------------------------
