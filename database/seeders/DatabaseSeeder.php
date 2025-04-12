@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             // ArusKasSeeder::class,
             // LabaRugiSeeder::class,
             // JurnalUmumSeeder::class,
+            PerubahanModalSeeder::class,
         ]);
     }
 }

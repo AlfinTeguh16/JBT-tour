@@ -3,7 +3,7 @@
         <label for="{{ $name }}" class="block text-sm font-medium text-gray-700">
             {{ $label }}
             @if($required)
-                <span class="text-red-500">*</span> <!-- Tambahkan tanda * merah jika required -->
+                <span class="text-red-500">*</span>
             @endif
         </label>
     @endif
@@ -57,6 +57,16 @@
                 <p class="text-xs text-gray-500 mt-1">File ini wajib diunggah <span class="text-red-500">*</span></p>
             @endif
         </div>
+
+    @elseif($type == 'select')
+        <select
+            id="{{ $name }}"
+            name="{{ $name }}"
+            {{ $required ? 'required' : '' }}
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary {{ $errors->has($name) ? 'border-red-500 ring-red-200' : '' }}"
+        >
+            {{ $slot }}
+        </select>
 
     @else
         <input

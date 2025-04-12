@@ -47,6 +47,10 @@
               <p class="mr-2" /> Jurnal Umum</p>
             </x-nav-link>
 
+            <x-nav-link href="{{ route('perubahan-modal.index') }}" :active="request()->routeIs('perubahan-modal.*')">
+              <p class="mr-2" /> Perubahan Modal</p>
+            </x-nav-link>
+
           @elseif(Auth::user()->role === 'admin')
             <x-nav-link href="{{ route('karyawan.index') }}" :active="request()->routeIs('karyawan.*')">
               <p class="mr-2" /> Data Karyawan </p>

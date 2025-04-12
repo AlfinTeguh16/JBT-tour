@@ -11,6 +11,7 @@ use App\Http\Controllers\LaporanKeuanganController;
 use App\Http\Controllers\ArusKasController;
 use App\Http\Controllers\LabaRugiController;
 use App\Http\Controllers\JurnalUmumController;
+use App\Http\Controllers\PerubahanModalController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,8 +46,8 @@ Route::middleware(['auth', 'role:akuntan'])->get('/dashboard/akuntan', [Dashboar
 Route::middleware(['auth', 'role:pengawas'])->get('/dashboard/pengawas', [DashboardController::class, 'pengawas'])->name('dashboard.pengawas');
 
 Route::middleware(['auth', 'role:direktur|admin|akuntan|pengawas'])
-    ->get('/dashboard/overview', [DashboardController::class, 'overview'])
-    ->name('dashboard.overview');
+    ->get('/dashboard/index', [DashboardController::class, 'index'])
+    ->name('dashboard.index');
 
 
 // ========================== Fitur: Karyawan ==========================
@@ -191,6 +192,25 @@ Route::prefix('jurnal-umum')->name('jurnal-umum.')->middleware('auth')->group(fu
         Route::get('/', [JurnalUmumController::class, 'index'])->name('index');
         Route::get('search', [JurnalUmumController::class, 'search'])->name('search');
         Route::get('{id}', [JurnalUmumController::class, 'show'])->name('show');
+    });
+});
+
+// ========================== Fitur: Perubahan Modal ==========================
+Route::prefix('perubahan-modal')->name('perubahan-modal.')->middleware('auth')->group(function () {
+    // CRUD - hanya untuk Akuntan
+    Route::middleware('role:akuntan')->group(function () {
+        Route::get('create', [PerubahanModalController::class, 'create'])->name('create');
+        Route::post('/', [PerubahanModalController::class, 'store'])->name('store');
+        Route::get('{id}/edit', [PerubahanModalController::class, 'edit'])->name('edit');
+        Route::put('{id}', [PerubahanModalController::class, 'update'])->name('update');
+        Route::post('{id}', [PerubahanModalController::class, 'destroy'])->name('destroy');
+    });
+
+    // Akses umum semua role: lihat dan cari
+    Route::middleware('role:direktur|admin|akuntan|pengawas')->group(function () {
+        Route::get('/', [PerubahanModalController::class, 'index'])->name('index');
+        Route::get('search', [PerubahanModalController::class, 'search'])->name('search');
+        Route::get('{id}', [PerubahanModalController::class, 'show'])->name('show');
     });
 });
 
