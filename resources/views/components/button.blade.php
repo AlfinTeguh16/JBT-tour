@@ -1,5 +1,6 @@
 @props([
-    'variant' => 'primary', // primary | secondary | neutral | disabled | delete | edit
+    'variant' => 'primary', // primary | secondary | neutral | disabled | delete | edit | back
+    'href' => null,
 ])
 
 @php
@@ -11,10 +12,17 @@
         'delete'    => 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-300',
         'edit'      => 'bg-yellow-500 text-white hover:bg-yellow-600 focus:ring-yellow-300',
         'disabled'  => 'bg-gray-400 text-gray-700 cursor-not-allowed opacity-50',
+        'back'      => 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-200',
     ];
     $classes = $base.' '.$variants[$variant];
 @endphp
 
-<button {{ $attributes->merge(['class' => $classes, 'disabled' => $variant === 'disabled']) }}>
-    {{ $slot }}
-</button>
+@if($variant === 'back' && $href)
+    <a href="{{ $href }}" {{ $attributes->merge(['class' => $classes]) }}>
+        {{ $slot }}
+    </a>
+@else
+    <button {{ $attributes->merge(['class' => $classes, 'disabled' => $variant === 'disabled']) }}>
+        {{ $slot }}
+    </button>
+@endif

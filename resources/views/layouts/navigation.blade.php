@@ -43,6 +43,10 @@
               <p class="mr-2" /> Laba Rugi </p>
             </x-nav-link>
 
+            <x-nav-link href="{{ route('jurnal-umum.index') }}" :active="request()->routeIs('jurnal-umum.*')">
+              <p class="mr-2" /> Jurnal Umum</p>
+            </x-nav-link>
+
           @elseif(Auth::user()->role === 'admin')
             <x-nav-link href="{{ route('karyawan.index') }}" :active="request()->routeIs('karyawan.*')">
               <p class="mr-2" /> Data Karyawan </p>

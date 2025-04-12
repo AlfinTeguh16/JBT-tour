@@ -10,6 +10,7 @@ use App\Http\Controllers\NeracaController;
 use App\Http\Controllers\LaporanKeuanganController;
 use App\Http\Controllers\ArusKasController;
 use App\Http\Controllers\LabaRugiController;
+use App\Http\Controllers\JurnalUmumController;
 
 /*
 |--------------------------------------------------------------------------
@@ -173,3 +174,23 @@ Route::prefix('laba-rugi')->name('laba-rugi.')->middleware('auth')->group(functi
         Route::get('{id}', [LabaRugiController::class, 'show'])->name('show');
     });
 });
+
+// ========================== Fitur: Jurnal Umum ==========================
+Route::prefix('jurnal-umum')->name('jurnal-umum.')->middleware('auth')->group(function () {
+    // CRUD - hanya untuk Akuntan
+    Route::middleware('role:akuntan')->group(function () {
+        Route::get('create', [JurnalUmumController::class, 'create'])->name('create');
+        Route::post('/', [JurnalUmumController::class, 'store'])->name('store');
+        Route::get('{id}/edit', [JurnalUmumController::class, 'edit'])->name('edit');
+        Route::put('{id}', [JurnalUmumController::class, 'update'])->name('update');
+        Route::post('{id}', [JurnalUmumController::class, 'destroy'])->name('destroy');
+    });
+
+    // Akses umum semua role: lihat dan cari
+    Route::middleware('role:direktur|admin|akuntan|pengawas')->group(function () {
+        Route::get('/', [JurnalUmumController::class, 'index'])->name('index');
+        Route::get('search', [JurnalUmumController::class, 'search'])->name('search');
+        Route::get('{id}', [JurnalUmumController::class, 'show'])->name('show');
+    });
+});
+
