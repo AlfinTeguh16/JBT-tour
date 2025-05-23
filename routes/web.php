@@ -69,7 +69,7 @@ Route::prefix('karyawan')->name('karyawan.')->middleware('auth')->group(function
 
 // ========================== Fitur: Draft Pekerjaan ==========================
 Route::prefix('draft-pekerjaan')->name('draft-pekerjaan.')->middleware('auth')->group(function () {
-    Route::middleware('role:akuntan|pengawas')->group(function () {
+    Route::middleware('role:akuntan|pengawas|admin')->group(function () {
         Route::get('create', [DraftPekerjaanController::class, 'create'])->name('create');
         Route::post('store', [DraftPekerjaanController::class, 'store'])->name('store');
         Route::get('{draft_pekerjaan}/edit', [DraftPekerjaanController::class, 'edit'])->name('edit');
@@ -87,7 +87,7 @@ Route::prefix('draft-pekerjaan')->name('draft-pekerjaan.')->middleware('auth')->
 
 // ========================== Fitur: Transaksi Draft Pekerjaan ==========================
 Route::prefix('transaksi-draft-pekerjaan')->name('transaksi-draft-pekerjaan.')->middleware('auth')->group(function () {
-    Route::middleware('role:akuntan')->group(function () {
+    Route::middleware('role:akuntan|admin')->group(function () {
         Route::get('create', [TransaksiDraftPekerjaanController::class, 'create'])->name('create');
         Route::post('store', [TransaksiDraftPekerjaanController::class, 'store'])->name('store');
         Route::get('{transaksi_draft_pekerjaan}/edit', [TransaksiDraftPekerjaanController::class, 'edit'])->name('edit');

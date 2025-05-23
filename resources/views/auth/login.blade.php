@@ -8,7 +8,9 @@
   <title>CV.Cipta Arya - Login</title>
 </head>
 <body>
-<div class="min-h-screen flex items-center justify-center bg-gray-50">
+
+<div class="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+    <h2 class="text-4xl font-bold text-blue-600 mb-6">CV. Cipta Arya</h2>
     <x-card class="w-full max-w-md">
         <div class="w-full flex justify-center">
           <h1 class="font-bold text-3xl">Login</h1>

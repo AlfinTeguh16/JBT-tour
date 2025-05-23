@@ -6,7 +6,7 @@
 <section x-data="{ open: false, target: null }" class="p-10 bg-white shadow-lg rounded-4xl w-full">
     <h1 class="font-bold text-3xl text-gray-800 mb-6">Draft Pekerjaan</h1>
 
-    @if(in_array(auth()->user()->role, ['akuntan', 'pengawas']))
+    @if(in_array(auth()->user()->role, ['akuntan', 'pengawas', 'admin']))
     <div class="mb-6">
       <x-button variant="primary" type="button" onclick="window.location='{{ route('draft-pekerjaan.create') }}'">
         Tambah Draft Pekerjaan
@@ -88,13 +88,16 @@
                                     data-row="{{ $item->id }}"
                                     @checked($item->pajak == 1)>
                             </td>
+
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
                                 <input type="checkbox"
                                     class="w-full mx-auto rowCheckbox form-checkbox h-5 text-primary focus:ring-primary border-gray-300 rounded"
                                     name="status_pekerjaan[]" value="1"
                                     data-row="{{ $item->id }}"
-                                    @checked($item->status_pekerjaan == 1)>
-                            </td>                            
+                                    @checked($item->status_pekerjaan == 1)
+                                    @if(auth()->user()->role !== 'pengawas') @disabled(true) @endif>
+                            </td>
+                 
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm space-x-1">
                                 <a href="{{ route('draft-pekerjaan.show',['draft_pekerjaan' => $item->id]) }}" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-blue-500 text-white hover:bg-blue-600">Detail</a>
                                 @if(in_array(auth()->user()->role, ['akuntan', 'pengawas']))
@@ -202,23 +205,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
-
-
-//untuk select 1 row
-document.addEventListener("DOMContentLoaded", function () {
-    // Saat checkbox "Select All" diklik
-    document.querySelectorAll(".selectAllRow").forEach(selectAll => {
-        selectAll.addEventListener("change", function () {
-            let rowId = this.getAttribute("data-row");
-            let checkboxes = document.querySelectorAll(`.rowCheckbox[data-row="${rowId}"]`);
-            
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
-            });
-        });
-    });
-});
-</script>
 
 <script>
 

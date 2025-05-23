@@ -16,47 +16,49 @@
 
     <div class="mb-4 w-full flex justify-end">
       <!-- Input search yang langsung memicu pencarian AJAX -->
-      <input name="search" type="text" id="search" placeholder="Cari karyawan..." 
+      <input name="search" type="text" id="search" placeholder="Cari karyawan..."
       onkeyup="ajaxSearch()"
       class="w-fit rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"/>
     </div>
 
-    <div class="overflow-x-auto bg-white shadow rounded-lg ">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID Karyawan</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Telepon</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
-                </tr>
-            </thead>
-            <tbody id="dataKaryawan" class="bg-white divide-y divide-gray-200">
-                @foreach($karyawan as $i => $item)
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $loop->iteration }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $item->id_karyawan }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $item->nama }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $item->email }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $item->no_telepon }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm space-x-1">
-                          <a href="{{ route('karyawan.show', $item) }}" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-blue-500 text-white hover:bg-blue-600">Detail</a>
-                          @if(auth()->user()->role === 'akuntan')
-                            <a href="{{ route('karyawan.edit', $item) }}" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-yellow-400 text-white hover:bg-yellow-500">Edit</a>
-                            <button @click="open = true; target = '{{ $item->id }}'" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-red-500 text-white hover:bg-red-600">
-                                Hapus
-                            </button>
-                          @endif
-                        </td>
+    <div class="w-screen lg:w-full overflow-x-auto border border-gray-200 rounded-lg">
+        <div class=" bg-white shadow rounded-lg ">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID Karyawan</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Telepon</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
                     </tr>
-                @endforeach
-            </tbody>
-            
-        </table>
-        <div class="mt-4 flex justify-end">
-            {{ $karyawan->links() }}
+                </thead>
+                <tbody id="dataKaryawan" class="bg-white divide-y divide-gray-200">
+                    @foreach($karyawan as $i => $item)
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $loop->iteration }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $item->id_karyawan }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $item->nama }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $item->email }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $item->no_telepon }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm space-x-1">
+                            <a href="{{ route('karyawan.show', $item) }}" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-blue-500 text-white hover:bg-blue-600">Detail</a>
+                            @if(auth()->user()->role === 'akuntan')
+                                <a href="{{ route('karyawan.edit', $item) }}" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-yellow-400 text-white hover:bg-yellow-500">Edit</a>
+                                <button @click="open = true; target = '{{ $item->id }}'" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-red-500 text-white hover:bg-red-600">
+                                    Hapus
+                                </button>
+                            @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+
+            </table>
+            <div class="mt-4 flex justify-end">
+                {{ $karyawan->links() }}
+            </div>
         </div>
     </div>
 
@@ -87,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function() {
         clearTimeout(searchTimer);
         searchTimer = setTimeout(() => {
             const keyword = document.getElementById('search').value;
-            const url = "{{ route('karyawan.search') }}"; 
+            const url = "{{ route('karyawan.search') }}";
             const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
             fetch(`${url}?keyword=${encodeURIComponent(keyword)}`, {

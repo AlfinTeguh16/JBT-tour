@@ -15,7 +15,7 @@
     <div class="w-full flex align-middle justify-center">
         <h1 class="text-4xl align-middle">Akuntan Dashboard</h1>
     </div>
-    
+
 
 @elseif(auth()->user()->role == 'admin')
     <div class="w-full flex align-middle justify-center">
@@ -34,29 +34,29 @@
 
 <div class="p-6">
     <div class="grid grid-cols-2 gap-4 mb-4">
-        <div class="border-2 border-black p-4 rounded-md text-center">
+        <a href="{{route('karyawan.index')}}" class="border-2 hover:shadow-md border-gray-200 hover:border-blue-400 bg-blue-100 p-4 rounded-md text-center text-gray-900 ">
             <h2 class="font-semibold text-lg">Karyawan</h2>
             <p class="text-2xl font-bold">{{ $totalKaryawan }}</p>
-        </div>
-        <div class="border-2 border-black p-4 rounded-md text-center">
+        </a>
+        <a href="{{route('draft-pekerjaan.index')}}" class="border-2 hover:shadow-md border-gray-200 hover:border-blue-400 bg-blue-100 p-4 rounded-md text-center text-gray-900 ">
             <h2 class="font-semibold text-lg">Draft Pekerjaan</h2>
             <p class="text-2xl font-bold">{{ $totalDraftPekerjaan }}</p>
-        </div>
-        <div class="border-2 border-black p-4 rounded-md text-center">
+        </a>
+        <a href="{{route('data-neraca.index')}}" class="border-2 hover:shadow-md border-gray-200 hover:border-blue-400 bg-blue-100 p-4 rounded-md text-center text-gray-900 ">
             <h2 class="font-semibold text-lg">Laporan Neraca</h2>
             <p class="text-2xl font-bold">{{ $totalNeraca }}</p>
-        </div>
-        <div class="border-2 border-black p-4 rounded-md text-center">
+        </a>
+        <a href="{{route('laporan-keuangan.index')}}" class="border-2 hover:shadow-md border-gray-200 hover:border-blue-400 bg-blue-100 p-4 rounded-md text-center text-gray-900 ">
             <h2 class="font-semibold text-lg">Laporan Keuangan</h2>
             <p class="text-2xl font-bold">{{ $totalLaporanKeuangan }}</p>
-        </div>
+        </a>
     </div>
 
     <div class="flex justify-center">
-        <div class="border-2 border-black p-4 rounded-md text-center w-1/2">
+        <a href="{{route('transaksi-draft-pekerjaan.index')}}" class="border-2 hover:shadow-md border-gray-200 hover:border-blue-400 bg-blue-100 p-4 rounded-md text-center text-gray-900 w-1/2 ">
             <h2 class="font-semibold text-lg">Transaksi Draft Pekerjaan</h2>
             <p class="text-2xl font-bold">{{ $totalTransaksiDraft }}</p>
-        </div>
+        </a>
     </div>
 </div>
 

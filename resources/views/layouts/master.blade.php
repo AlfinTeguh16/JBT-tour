@@ -50,5 +50,29 @@
     
     <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const openMenuBtn = document.getElementById('open-menu');
+            const navigation = document.getElementById('navigation');
+            const closeMenuBtn = document.getElementById('close-menu');
+    
+            openMenuBtn.addEventListener('click', function () {
+                navigation.classList.remove('hidden');
+                setTimeout(() => {
+                    navigation.classList.remove('-translate-x-full');
+                    navigation.classList.add('translate-x-0');
+                }, 10); 
+            });
+    
+            closeMenuBtn.addEventListener('click', function () {
+                navigation.classList.remove('translate-x-0');
+                navigation.classList.add('-translate-x-full');
+    
+                setTimeout(() => {
+                    navigation.classList.add('hidden');
+                }, 300);
+            });
+        });
+    </script>    
 </body>
 </html>
