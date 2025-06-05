@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('tempat_lahir');
             $table->boolean('jenis_kelamin');
             $table->text('alamat');
+            $table->string('jabatan');
             $table->boolean('is_deleted')->default(false);
             $table->timestamps();
         });

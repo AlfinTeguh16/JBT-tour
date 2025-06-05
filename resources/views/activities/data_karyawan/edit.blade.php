@@ -19,26 +19,27 @@
           <x-form name="no_telepon" label="No. Telepon" type="text" :value="$karyawan->no_telepon" required />
 
           <x-form name="email" label="Email" type="email" :value="$karyawan->email" required />
-          
+
           <x-form name="tanggal_lahir" label="Tanggal Lahir" type="date" :value="$karyawan->tanggal_lahir->format('Y-m-d')" required />
         </div>
 
         <div class="p-3 w-full">
           <x-form name="tempat_lahir" label="Tempat Lahir" type="text" :value="$karyawan->tempat_lahir" required />
 
-          <x-form 
-              name="jenis_kelamin" 
-              label="Jenis Kelamin" 
-              type="radio" 
+          <x-form
+              name="jenis_kelamin"
+              label="Jenis Kelamin"
+              type="radio"
               :options="[
-                ['value'=>'L','label'=>'Laki-laki'], 
+                ['value'=>'L','label'=>'Laki-laki'],
                 ['value'=>'P','label'=>'Perempuan']
-              ]" 
-              :value="$karyawan->jenis_kelamin ? 'L':'P'" 
-              required 
+              ]"
+              :value="$karyawan->jenis_kelamin ? 'L':'P'"
+              required
           />
 
           <x-form name="alamat" label="Alamat" type="textarea" :value="$karyawan->alamat" required />
+          <x-form name="jabatan" label="Jabatan" type="text" :value="$karyawan->jabatan" required />
         </div>
       </div>
 

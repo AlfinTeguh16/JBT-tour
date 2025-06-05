@@ -13,7 +13,7 @@ class KaryawanController extends Controller
     public function index()
     {
         $karyawan = Karyawan::where('is_deleted', 0)->paginate(10);
-        
+
         return view('activities.data_karyawan.index', compact('karyawan'));
     }
 
@@ -38,6 +38,7 @@ class KaryawanController extends Controller
             'tempat_lahir'  => 'required|string|max:100',
             'jenis_kelamin' => 'required|in:L,P',
             'alamat'        => 'required|string',
+            'jabatan'       => 'required|string|max:100',
         ]);
 
         // Generate auto ID
@@ -94,6 +95,7 @@ class KaryawanController extends Controller
             'tempat_lahir'  => 'required|string|max:100',
             'jenis_kelamin' => 'required|in:L,P',
             'alamat'        => 'required|string',
+            'jabatan'       => 'required|string|max:100',
         ]);
 
         // Map jenis_kelamin ke tinyint
@@ -136,9 +138,10 @@ class KaryawanController extends Controller
         ->where(function ($query) use ($keyword) {
             $query->where('nama', 'LIKE', "%{$keyword}%")
                 ->orWhere('id_karyawan', 'LIKE', "%{$keyword}%")
-                ->orWhere('email', 'LIKE', "%{$keyword}%");
+                ->orWhere('email', 'LIKE', "%{$keyword}%")
+                ->orWhere('jabatan', 'LIKE', "%{$keyword}%");
         })
-        ->get(); // Gunakan `get()` karena kita tidak menggunakan pagination
+        ->get(); 
 
     return response()->json($karyawan);
     }

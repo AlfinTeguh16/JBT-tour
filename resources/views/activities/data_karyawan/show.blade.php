@@ -41,6 +41,10 @@
           <p class="text-sm text-gray-500">Alamat</p>
           <p class="mt-1 text-lg font-medium text-gray-800 whitespace-pre-line">{{ $karyawan->alamat }}</p>
       </div>
+      <div class="md:col-span-2">
+          <p class="text-sm text-gray-500">Jabatan</p>
+          <p class="mt-1 text-lg font-medium text-gray-800 whitespace-pre-line">{{ $karyawan->jabatan }}</p>
+      </div>
   </div>
 
   <div class="mt-8 flex space-x-2">

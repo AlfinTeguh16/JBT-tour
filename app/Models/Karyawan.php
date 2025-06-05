@@ -17,12 +17,13 @@ class Karyawan extends Model
         'tempat_lahir',
         'jenis_kelamin',
         'alamat',
+        'jabatan',
         'is_deleted',
     ];
 
     protected $casts = [
         'tanggal_lahir' => 'date',
     ];
-    
-    
+
+
 }

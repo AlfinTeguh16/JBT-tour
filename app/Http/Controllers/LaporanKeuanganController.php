@@ -133,15 +133,15 @@ class LaporanKeuanganController extends Controller
         try {
             // Cari data berdasarkan ID
             $laporanKeuangan = LaporanKeuangan::findOrFail($id);
-    
+
             // Update kolom is_deleted menjadi true (1)
             $laporanKeuangan->update(['is_deleted' => true]);
-    
+
             // Pastikan route ini benar-benar ada
             return redirect()->route('laporan-keuangan.index')->with('success', 'Data Laporan Keuangan berhasil dinonaktifkan!');
         } catch (\Exception $e) {
             \Log::error('Gagal menghapus Data LaporanKeuangan: ' . $e->getMessage());
-    
+
             // Debug cepat:
             return back()->with('failed', 'Terjadi kesalahan saat menonaktifkan Data Laporan Keuangan. Pesan: ' . $e->getMessage());
         }
@@ -152,11 +152,11 @@ class LaporanKeuanganController extends Controller
             $request->validate([
                 'status_laporan' => 'required|in:tervalidasi,belum tervalidasi',
             ]);
-    
+
             $laporan = LaporanKeuangan::findOrFail($id);
             $laporan->status_laporan = $request->status_laporan;
             $laporan->save();
-    
+
             return redirect()->back()->with('success', 'Status laporan berhasil diperbarui.');
         } catch (\Exception $e) {
             \Log::error('Gagal memperbarui status laporan: ' . $e->getMessage());

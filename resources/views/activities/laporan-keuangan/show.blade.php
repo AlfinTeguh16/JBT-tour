@@ -33,8 +33,11 @@
             </span>
         </p>
     @endif
-  
+
   </div>
+    <div class="mb-6 w-full flex justify-end">
+        <x-button variant="neutral"  onclick="downloadPDF('{{ $fileUrl }}')">Simpan</x-button>
+    </div>
 
     @if($extension === 'pdf')
         <iframe src="{{ $fileUrl }}" class="w-full h-[600px]" frameborder="0"></iframe>
@@ -45,4 +48,16 @@
         <a href="{{ $fileUrl }}" class="text-blue-600 underline" target="_blank">Download File</a>
     @endif
 </section>
+
+
+<script>
+    function downloadPDF(url) {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = url.split('/').pop();
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
 @endsection

@@ -18,21 +18,22 @@
             <x-form name="no_telepon" label="No. Telepon" type="text" placeholder="Masukkan No. Telepon" required="true" />
 
             <x-form name="email" label="Email" type="email" required="true" />
-            
+
             <x-form name="tanggal_lahir" label="Tanggal Lahir" type="date" required="true" />
 
           </div>
           <div class="p-3 w-full">
             <x-form name="tempat_lahir" label="Tempat Lahir" type="text" placeholder="Masukkan Tempat Lahir" required="true" />
-            <x-form 
-                name="jenis_kelamin" 
-                label="Jenis Kelamin" 
-                type="radio" 
-                :options="[['value' => 'L', 'label' => 'Laki-laki'], ['value' => 'P', 'label' => 'Perempuan']]" 
-                required="true" 
+            <x-form
+                name="jenis_kelamin"
+                label="Jenis Kelamin"
+                type="radio"
+                :options="[['value' => 'L', 'label' => 'Laki-laki'], ['value' => 'P', 'label' => 'Perempuan']]"
+                required="true"
             />
 
             <x-form name="alamat" label="Alamat" type="textarea" placeholder="Masukkan Alamat" required="true" />
+            <x-form name="jabatan" label="Jabatan" type="text" placeholder="Masukkan Jabatan" required="true" />
           </div>
         </div>
         <div class="flex flex-row justify-end">
