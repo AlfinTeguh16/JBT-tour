@@ -31,6 +31,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Telepon</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jabatan</th>
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
                     </tr>
                 </thead>
@@ -42,6 +43,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $item->nama }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $item->email }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $item->no_telepon }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $item->jabatan }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm space-x-1">
                             <a href="{{ route('karyawan.show', $item) }}" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-blue-500 text-white hover:bg-blue-600">Detail</a>
                             @if(auth()->user()->role === 'akuntan')
