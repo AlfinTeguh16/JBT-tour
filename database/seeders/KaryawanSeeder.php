@@ -32,7 +32,7 @@ class KaryawanSeeder extends Seeder
                 // Misal, jika genap maka Laki-laki (1), ganjil Perempuan (0)
                 'jenis_kelamin' => $i % 2 === 0 ? 1 : 0,
                 'alamat'        => "Jl. Contoh Alamat No. " . $i,
-                'nama'          => "Jabatan " . $i,
+                'jabatan'          => "Jabatan " . $i,
                 // Sesuai JSON, gunakan field is_deleted (0 = aktif)
                 'is_deleted'    => 0,
                 'created_at'    => $now,
