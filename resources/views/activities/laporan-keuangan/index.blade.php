@@ -3,6 +3,9 @@
 @section('title', 'CV. Cipta Arya - Laporan Keuangan')
 
 @section('content')
+@php
+    use App\Enums\Bulan;
+@endphp
 <section x-data="{ openTambah: false, openEdit: false, openHapus: false, targetId: null }" class="p-10 bg-white shadow-lg rounded-4xl w-full">
     <h1 class="font-bold text-3xl text-gray-800 mb-6">Laporan Keuangan</h1>
 
@@ -15,7 +18,7 @@
     @endif
 
     <div class="mb-4 w-full flex justify-end">
-      <input name="search" type="text" id="search" placeholder="Cari Laporan Keuangan..." 
+      <input name="search" type="text" id="search" placeholder="Cari Laporan Keuangan..."
       onkeyup="ajaxSearch()"
       class="w-fit rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"/>
     </div>
@@ -36,9 +39,14 @@
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 text-sm text-gray-700">{{ $loop->iteration }}</td>
                             <td class="px-6 py-4 text-sm">
-                                {{ \App\Enums\Bulan::from($item->updated_at->translatedFormat('F'))->value }}
-                            </td>                          
-                            <td class="px-6 py-4 text-sm">{{ basename($item->file_laporan_keuangan) }}</td>                    
+                                @php
+
+                                    $bulanFormatted = ucfirst($item->updated_at->locale('id')->translatedFormat('F'));
+                                    $bulanEnum = collect(Bulan::cases())->firstWhere('value', $bulanFormatted);
+                                @endphp
+                                {{ $bulanEnum = Bulan::from($bulanFormatted); }}
+                            </td>
+                            <td class="px-6 py-4 text-sm">{{ basename($item->file_laporan_keuangan) }}</td>
                             <td class="px-6 py-4 text-center text-sm space-x-1">
                                 <a href="{{ route('laporan-keuangan.show', $item->id) }}" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-blue-500 text-white hover:bg-blue-600">Detail</a>
                                 @if(auth()->user()->role === 'akuntan')
@@ -48,7 +56,7 @@
                             </td>
                         </tr>
                     @endforeach
-                </tbody>    
+                </tbody>
             </table>
         </div>
         <div class="mt-4 flex justify-end">
@@ -74,7 +82,7 @@
             </div>
         </div>
     </template>
-    
+
     <!-- Modal Edit -->
     <template x-if="openEdit">
       <div class="fixed inset-0 bg-gray-600/25 flex items-center justify-center z-50">
@@ -82,11 +90,11 @@
               <h2 class="text-xl font-semibold mb-4 text-yellow-600">Edit File Laporan Keuangan</h2>
               <p>Unggah ulang file laporan keuangan Anda (jika diperlukan).</p>
               <p class="text-gray-400 text-xs mb-6">Ukuran File Tidak Melebihi 5MB</p>
-              
+
               <form :action="'/laporan-keuangan/' + targetId" method="POST" enctype="multipart/form-data" class="space-y-4">
                   @csrf
                   @method('PUT')
-                  
+
                   <x-form type="file" id="file_laporan_keuangan_edit" label="Laporan Keuangan" name="file_laporan_keuangan" />
 
                   <div class="flex justify-end space-x-2">
@@ -127,7 +135,7 @@ document.addEventListener("DOMContentLoaded", function() {
         clearTimeout(searchTimer);
         searchTimer = setTimeout(() => {
             const keyword = document.getElementById('search').value;
-            const url = "{{ route('laporan-keuangan.search') }}"; 
+            const url = "{{ route('laporan-keuangan.search') }}";
             const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
             fetch(`${url}?keyword=${encodeURIComponent(keyword)}`, {
