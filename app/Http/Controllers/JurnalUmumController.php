@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\JurnalUmum;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Rules\UniqueWithoutDeleted;
 
 class JurnalUmumController extends Controller
 {
@@ -24,23 +25,33 @@ class JurnalUmumController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'tanggal' => 'required|date',
-            'keterangan' => 'nullable|string|max:255',
-            'akun_debet' => 'required|string|max:100',
-            'akun_kredit' => 'required|string|max:100',
-            'jumlah' => 'required|numeric|min:0',
+        $request->merge([
+            'jumlah' => str_replace('.', '', $request->jumlah)
         ]);
 
+        $validated = $request->validate([
+            'tanggal'     => 'required|date',
+            'keterangan'  => 'nullable|string|max:255',
+            'akun_debet'  => 'required|string|max:100',
+            'akun_kredit' => 'required|string|max:100',
+            'jumlah'      => 'required|numeric|min:0',
+        ]);
+
+        // Cek apakah data dengan kombinasi ini sudah ada dan belum dihapus
+        $exists = JurnalUmum::where('is_deleted', 0)
+            ->where('tanggal', $validated['tanggal'])
+            ->where('akun_debet', $validated['akun_debet'])
+            ->where('akun_kredit', $validated['akun_kredit'])
+            ->where('jumlah', $validated['jumlah'])
+            ->exists();
+
+        if ($exists) {
+            return back()->withInput()
+                ->withErrors(['duplicate' => 'Data jurnal dengan kombinasi ini sudah ada dan masih aktif.']);
+        }
+
         try {
-            $cleanJumlah = str_replace('.', '', $request->jumlah);
-            JurnalUmum::create([
-                'tanggal' => $request->tanggal,
-                'keterangan' => $request->keterangan,
-                'akun_debet' => $request->akun_debet,
-                'akun_kredit' => $request->akun_kredit,
-                'jumlah' => $cleanJumlah,
-            ]);
+            JurnalUmum::create($validated);
 
             return redirect()->route('jurnal-umum.index')->with('success', 'Data jurnal umum berhasil ditambahkan.');
         } catch (\Exception $e) {
@@ -48,6 +59,8 @@ class JurnalUmumController extends Controller
             return back()->with('failed', 'Terjadi kesalahan.')->withInput();
         }
     }
+
+
 
     public function edit($id)
     {

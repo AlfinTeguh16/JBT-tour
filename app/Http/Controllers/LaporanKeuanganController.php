@@ -35,27 +35,34 @@ class LaporanKeuanganController extends Controller
     public function store(Request $request)
     {
         try {
-            // Validasi input
+            // Validasi file
             $validated = $request->validate([
                 'file_laporan_keuangan' => 'required|file|mimes:pdf,doc,docx|max:5120', // max 5MB
             ]);
 
             if ($request->hasFile('file_laporan_keuangan')) {
                 $file = $request->file('file_laporan_keuangan');
+                $originalName = $file->getClientOriginalName();
 
-                // Simpan file ke storage
-                $path = $file->storeAs(
-                    'file_laporan_keuangan',
-                    $file->getClientOriginalName(), // pakai nama asli
-                    'public'
-                );
+                // Cek apakah file dengan nama asli ini sudah ada dan belum dihapus
+                $exists = LaporanKeuangan::where('is_deleted', 0)
+                    ->where('file_laporan_keuangan', 'like', "%/{$originalName}")
+                    ->exists();
 
+                if ($exists) {
+                    return redirect()->back()->withInput()->withErrors([
+                        'duplicate' => 'File laporan keuangan dengan nama yang sama sudah diunggah sebelumnya.'
+                    ]);
+                }
+
+                // Simpan file
+                $path = $file->storeAs('file_laporan_keuangan', $originalName, 'public');
                 $validated['file_laporan_keuangan'] = $path;
             } else {
                 $validated['file_laporan_keuangan'] = null;
             }
 
-            // Simpan data ke database
+            // Simpan ke database
             LaporanKeuangan::create($validated);
 
             return redirect()->back()->with('success', 'Laporan Keuangan berhasil diunggah.');
@@ -71,6 +78,7 @@ class LaporanKeuanganController extends Controller
             return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan laporan. Silakan coba lagi.');
         }
     }
+
 
     /**
      * Display the specified resource.

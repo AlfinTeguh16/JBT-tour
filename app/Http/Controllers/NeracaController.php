@@ -33,9 +33,8 @@ class NeracaController extends Controller
      */
     public function store(Request $request)
     {
-         Log::debug('Fungsi store() dipanggil');
-        // dd($request->all());
-         $request->merge([
+
+        $request->merge([
             'biaya_spidi'      => str_replace('.', '', $request->input('biaya_spidi')),
             'biaya_listrik'    => str_replace('.', '', $request->input('biaya_listrik')),
             'biaya_air_minum'  => str_replace('.', '', $request->input('biaya_air_minum')),
@@ -45,7 +44,6 @@ class NeracaController extends Controller
         ]);
 
         try {
-            // Validasi data input
             $validated = $request->validate([
                 'bulan'              => 'required|string|max:255',
                 'biaya_spidi'        => 'required|numeric',
@@ -56,28 +54,37 @@ class NeracaController extends Controller
                 'biaya_telepon'      => 'required|numeric',
             ]);
 
-            // Neraca::create($validated);
-            $neraca = new Neraca();
-            $neraca->bulan = $validated['bulan'];
-            $neraca->biaya_spidi = $validated['biaya_spidi'];
-            $neraca->biaya_listrik = $validated['biaya_listrik'];
-            $neraca->biaya_air_minum = $validated['biaya_air_minum'];
-            $neraca->gaji_karyawan = $validated['gaji_karyawan'];
-            $neraca->modal_perusahaan = $validated['modal_perusahaan'];
-            $neraca->biaya_telepon = $validated['biaya_telepon'];
+            // ✅ Cek duplikat berdasarkan semua field kecuali is_deleted
+            $isDuplicate = Neraca::where('bulan', $validated['bulan'])
+                ->where('biaya_spidi', $validated['biaya_spidi'])
+                ->where('biaya_listrik', $validated['biaya_listrik'])
+                ->where('biaya_air_minum', $validated['biaya_air_minum'])
+                ->where('gaji_karyawan', $validated['gaji_karyawan'])
+                ->where('modal_perusahaan', $validated['modal_perusahaan'])
+                ->where('biaya_telepon', $validated['biaya_telepon'])
+                ->where('is_deleted', 0)
+                ->exists();
+
+            if ($isDuplicate) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['duplicate' => 'Data Neraca dengan nilai yang sama sudah ada.']);
+            }
+
+            // Simpan data
+            $neraca = new Neraca($validated);
             $neraca->save();
-            Log::debug('Data berhasil disimpan manual');
+
 
             return redirect()->route('data-neraca.index')->with('success', 'Data Neraca berhasil dibuat!');
-
         } catch (\Exception $e) {
-            // Log error untuk debugging
             Log::error('Gagal menyimpan Data Neraca: ' . $e->getMessage());
-
-            // Redirect kembali dengan pesan error
-            return redirect()->back()->withErrors(['failed' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi!'])->withInput();
+            return redirect()->back()
+                ->withErrors(['failed' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi!'])
+                ->withInput();
         }
     }
+
 
     /**
      * Display the specified resource.

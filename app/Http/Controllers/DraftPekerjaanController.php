@@ -8,6 +8,7 @@ use App\Models\TransaksiDraftPekerjaan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Rules\UniqueWithoutDeleted;
 
 class DraftPekerjaanController extends Controller
 {
@@ -37,18 +38,31 @@ class DraftPekerjaanController extends Controller
         try {
             // Validasi data input
             $validated = $request->validate([
-                'nama_pekerjaan'    => 'required|string|max:255',
-                'instansi'          => 'required|string|max:255',
-                'no_instansi'       => 'required|string|max:20',
-                'email_instansi'    => 'nullable|email|max:255',
+                'nama_pekerjaan'     => 'required|string|max:255',
+                'instansi'           => 'required|string|max:255',
+                'no_instansi'        => 'required|string|max:20',
+                'email_instansi'     => 'nullable|email|max:255',
                 'tanggal_pengawasan' => 'nullable|date',
-                'dokumen_penawaran' => 'nullable|file|mimes:pdf,doc,docx,xls|max:2048',
-                'alamat_proyek'     => 'required|string',
+                'dokumen_penawaran'  => 'nullable|file|mimes:pdf,doc,docx,xls|max:2048',
+                'alamat_proyek'      => 'required|string',
             ]);
+
+            // Cek apakah data dengan kombinasi yang sama dan is_deleted = 0 sudah ada
+            $exists = DraftPekerjaan::where('is_deleted', 0)
+                ->where('nama_pekerjaan', $validated['nama_pekerjaan'])
+                ->where('instansi', $validated['instansi'])
+                ->where('no_instansi', $validated['no_instansi'])
+                ->exists();
+
+            if ($exists) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['duplicate' => 'Data dengan nama pekerjaan, instansi, dan nomor instansi yang sama sudah ada.']);
+            }
 
             // Buat code_draft unik
             $validated['code_draft'] = 'DRAFT-' . Str::upper(Str::random(8));
-            dd($validated);
+
             // Upload dokumen penawaran jika ada
             if ($request->hasFile('dokumen_penawaran')) {
                 $validated['dokumen_penawaran'] = $request->file('dokumen_penawaran')->store('dokumen_penawaran', 'public');
@@ -71,12 +85,12 @@ class DraftPekerjaanController extends Controller
 
             return redirect()->route('draft-pekerjaan.index')->with('success', 'Draft Pekerjaan berhasil dibuat!');
         } catch (\Exception $e) {
-            // Log error untuk debugging
             Log::error('Gagal menyimpan Draft Pekerjaan: ' . $e->getMessage());
 
             return redirect()->back()->withErrors(['failed' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi!'])->withInput();
         }
     }
+
 
     /**
      * Display the specified resource.

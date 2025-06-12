@@ -36,6 +36,20 @@ class PerubahanModalController extends Controller
         try {
             $cleanJumlah = str_replace('.', '', $request->jumlah);
 
+            // Cek duplikat data sebelum insert
+            $isDuplicate = PerubahanModal::where('tanggal', $request->tanggal)
+                ->where('keterangan', $request->keterangan)
+                ->where('jenis', $request->jenis)
+                ->where('jumlah', $cleanJumlah)
+                ->where('is_deleted', 0)
+                ->exists();
+
+            if ($isDuplicate) {
+                return back()
+                    ->withInput()
+                    ->withErrors(['duplicate' => 'Data perubahan modal dengan informasi yang sama sudah ada.']);
+            }
+
             PerubahanModal::create([
                 'tanggal' => $request->tanggal,
                 'keterangan' => $request->keterangan,
@@ -49,6 +63,7 @@ class PerubahanModalController extends Controller
             return back()->with('failed', 'Terjadi kesalahan.')->withInput();
         }
     }
+
 
     public function edit($id)
     {

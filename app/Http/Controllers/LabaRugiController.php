@@ -24,17 +24,31 @@ class LabaRugiController extends Controller
 
     public function store(Request $request)
     {
+        // Hapus pemisah ribuan jika ada
         $request->merge(['jumlah' => str_replace('.', '', $request->jumlah)]);
 
-        $request->validate([
-            'tanggal' => 'required|date',
-            'jenis' => 'required|in:pendapatan,beban',
-            'keterangan' => 'nullable|string|max:255',
-            'jumlah' => 'required|numeric|min:0',
+        $validated = $request->validate([
+            'tanggal'     => 'required|date',
+            'jenis'       => 'required|in:pendapatan,beban',
+            'keterangan'  => 'nullable|string|max:255',
+            'jumlah'      => 'required|numeric|min:0',
         ]);
 
+        // Cek apakah data dengan kombinasi ini sudah ada dan masih aktif
+        $exists = LabaRugi::where('is_deleted', 0)
+            ->where('tanggal', $validated['tanggal'])
+            ->where('jenis', $validated['jenis'])
+            ->where('jumlah', $validated['jumlah'])
+            ->exists();
+
+        if ($exists) {
+            return back()->withInput()->withErrors([
+                'duplicate' => 'Data dengan tanggal, jenis, dan jumlah yang sama sudah ada.'
+            ]);
+        }
+
         try {
-            LabaRugi::create($request->all());
+            LabaRugi::create($validated);
             return redirect()->route('laba-rugi.index')->with('success', 'Data Laba Rugi berhasil ditambahkan.');
         } catch (\Exception $e) {
             Log::error('Gagal menambahkan Laba Rugi: ' . $e->getMessage());
