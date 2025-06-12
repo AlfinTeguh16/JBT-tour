@@ -12,10 +12,11 @@
     <form action="{{ route('transaksi-draft-pekerjaan.update', $transaksi->id) }}" method="POST">
       @csrf
       @method('PUT')
+        <input type="hidden" name="draft_pekerjaan_id" value="{{ $transaksi->draft_pekerjaan_id }}">
 
       <div class="flex md:flex-row md:justify-between">
         <div class="p-3 w-full">
-          <x-form name="nilai_pekerjaan" label="Nilai Pekerjaan" type="number" 
+          <x-form name="nilai_pekerjaan" label="Nilai Pekerjaan" type="number"
             placeholder="Masukkan Nilai Pekerjaan" required="true"
             value="{{ old('nilai_pekerjaan', $transaksi->nilai_pekerjaan) }}" />
 

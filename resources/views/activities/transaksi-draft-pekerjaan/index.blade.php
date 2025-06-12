@@ -16,7 +16,7 @@
     @endif --}}
 
     <div class="mb-4 w-full flex justify-end">
-        <input name="search" type="text" id="search" placeholder="Cari Transaksi Draft Pekerjaan..." 
+        <input name="search" type="text" id="search" placeholder="Cari Transaksi Draft Pekerjaan..."
                onkeyup="ajaxSearch()"
                class="w-fit rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"/>
     </div>
@@ -62,7 +62,7 @@
                         </tr>
                     @endforeach
 
-                </tbody>    
+                </tbody>
             </table>
         </div>
         <div class="mt-4 flex justify-end">
@@ -97,7 +97,7 @@ document.addEventListener("DOMContentLoaded", function() {
         clearTimeout(searchTimer);
         searchTimer = setTimeout(() => {
             const keyword = document.getElementById('search').value;
-            const url = "{{ route('transaksi-draft-pekerjaan.search') }}"; 
+            const url = "{{ route('transaksi-draft-pekerjaan.search') }}";
             const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
             fetch(`${url}?keyword=${encodeURIComponent(keyword)}`, {

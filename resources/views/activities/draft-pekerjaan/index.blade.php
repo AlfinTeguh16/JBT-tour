@@ -16,7 +16,7 @@
 
     <div class="mb-4 w-full flex justify-end">
 
-      <input name="search" type="text" id="search" placeholder="Cari Draft Pekerjaan..." 
+      <input name="search" type="text" id="search" placeholder="Cari Draft Pekerjaan..."
       onkeyup="ajaxSearch()"
       class="w-fit rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"/>
     </div>
@@ -43,7 +43,7 @@
                     @foreach($draftPekerjaan as $i => $item)
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                <input type="checkbox" class="w-full mx-auto selectAllRow form-checkbox h-5 text-primary focus:ring-primary border-gray-300 rounded" 
+                                <input type="checkbox" class="w-full mx-auto selectAllRow form-checkbox h-5 text-primary focus:ring-primary border-gray-300 rounded"
                                     data-row="{{ $item->id }}">
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $loop->iteration }}</td>
@@ -97,7 +97,7 @@
                                     @checked($item->status_pekerjaan == 1)
                                     @if(auth()->user()->role !== 'pengawas') @disabled(true) @endif>
                             </td>
-                 
+
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm space-x-1">
                                 <a href="{{ route('draft-pekerjaan.show',['draft_pekerjaan' => $item->id]) }}" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-blue-500 text-white hover:bg-blue-600">Detail</a>
                                 @if(in_array(auth()->user()->role, ['akuntan', 'pengawas']))
@@ -109,14 +109,14 @@
                             </td>
                         </tr>
                     @endforeach
-                </tbody>    
+                </tbody>
 
             </table>
         </div>
         <div class="mt-4 flex justify-end">
             {{ $draftPekerjaan->links() }}
         </div>
-        
+
     </div>
 
     <!-- Modal Konfirmasi Hapus -->
@@ -188,7 +188,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             <td class="px-6 py-4 text-sm">${item.code_draft}</td>
                             <td class="px-6 py-4 text-sm">${item.nama_pekerjaan}</td>
                             <td class="px-6 py-4 text-sm">${item.instansi}</td>
-                            <td class="px-6 py-4 text-center text-sm space-x-1">${aksiButtons}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm space-x-1">${aksiButtons}</td>
                         `;
 
                         tbody.appendChild(tr);
@@ -214,7 +214,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const id = this.dataset.row;
                 const name = this.name.replace('[]', ''); // ambil nama kolomnya
                 const value = this.checked ? 1 : 0;
-    
+
                 fetch(`/draft-pekerjaan/update-checkbox/${id}`, {
                     method: "POST",
                     headers: {
@@ -239,6 +239,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 </script>
-    
+
 
 @endsection
