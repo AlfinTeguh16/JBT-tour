@@ -9,6 +9,7 @@ class TransaksiDraftPekerjaan extends Model
     protected $table ='tb_tansaksi_draft_pekerjaan';
 
     protected $fillable =[
+        'draft_pekerjaan_id',
         'nama_pekerjaan',
         'instansi',
         'nilai_pekerjaan',

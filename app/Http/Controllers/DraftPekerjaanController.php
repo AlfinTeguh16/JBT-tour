@@ -35,6 +35,7 @@ class DraftPekerjaanController extends Controller
      */
     public function store(Request $request)
     {
+        // dd($request->all());
         try {
             // Validasi data input
             $validated = $request->validate([
@@ -83,7 +84,10 @@ class DraftPekerjaanController extends Controller
                 'nilai_bersih_pekerjaan' => rand(85000000, 495000000),
             ]);
 
+            Log::debug('Redirecting to index');
             return redirect()->route('draft-pekerjaan.index')->with('success', 'Draft Pekerjaan berhasil dibuat!');
+
+            // return redirect()->route('draft-pekerjaan.index')->with('success', 'Draft Pekerjaan berhasil dibuat!');
         } catch (\Exception $e) {
             Log::error('Gagal menyimpan Draft Pekerjaan: ' . $e->getMessage());
 

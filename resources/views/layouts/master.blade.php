@@ -32,6 +32,13 @@
                 <p class="text-sm">{{ session('failed') }}</p>
             </div>
         @endif
+
+        @if ($errors->has('duplicate'))
+            <div class="bg-red-50 border border-red-200 text-red-800 rounded-lg shadow p-4">
+                {{ $errors->first('duplicate') }}
+            </div>
+        @endif
+
     </div>
 
 

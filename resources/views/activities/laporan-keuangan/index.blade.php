@@ -40,7 +40,6 @@
                             <td class="px-6 py-4 text-sm text-gray-700">{{ $loop->iteration }}</td>
                             <td class="px-6 py-4 text-sm">
                                 @php
-
                                     $bulanFormatted = ucfirst($item->updated_at->locale('id')->translatedFormat('F'));
                                     $bulanEnum = collect(Bulan::cases())->firstWhere('value', $bulanFormatted);
                                 @endphp

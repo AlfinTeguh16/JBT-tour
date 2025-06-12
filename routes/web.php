@@ -49,6 +49,23 @@ Route::middleware(['auth', 'role:direktur|admin|akuntan|pengawas'])
     ->get('/dashboard/index', [DashboardController::class, 'index'])
     ->name('dashboard.index');
 
+// ========================== Fitur: Draft Pekerjaan ==========================
+Route::prefix('draft-pekerjaan')->name('draft-pekerjaan.')->middleware('auth')->group(function () {
+    Route::middleware('role:akuntan|pengawas|admin')->group(function () {
+        Route::get('create', [DraftPekerjaanController::class, 'create'])->name('create');
+        Route::post('/', [DraftPekerjaanController::class, 'store'])->name('store');
+        Route::get('{draft_pekerjaan}/edit', [DraftPekerjaanController::class, 'edit'])->name('edit');
+        Route::put('{draft_pekerjaan}', [DraftPekerjaanController::class, 'update'])->name('update');
+        Route::post('{draft_pekerjaan}', [DraftPekerjaanController::class, 'destroy'])->name('destroy');
+        Route::post('update-checkbox/{draft_pekerjaan}', [DraftPekerjaanController::class, 'updateCheckbox'])->name('update-checkbox');
+    });
+
+    Route::middleware('role:direktur|admin|akuntan|pengawas')->group(function () {
+        Route::get('/', [DraftPekerjaanController::class, 'index'])->name('index');
+        Route::get('search', [DraftPekerjaanController::class, 'search'])->name('search');
+        Route::get('{draft_pekerjaan}', [DraftPekerjaanController::class, 'show'])->name('show');
+    });
+});
 
 // ========================== Fitur: Karyawan ==========================
 Route::prefix('karyawan')->name('karyawan.')->middleware('auth')->group(function () {
@@ -67,23 +84,6 @@ Route::prefix('karyawan')->name('karyawan.')->middleware('auth')->group(function
     });
 });
 
-// ========================== Fitur: Draft Pekerjaan ==========================
-Route::prefix('draft-pekerjaan')->name('draft-pekerjaan.')->middleware('auth')->group(function () {
-    Route::middleware('role:akuntan|pengawas|admin')->group(function () {
-        Route::get('create', [DraftPekerjaanController::class, 'create'])->name('create');
-        Route::post('store', [DraftPekerjaanController::class, 'store'])->name('store');
-        Route::get('{draft_pekerjaan}/edit', [DraftPekerjaanController::class, 'edit'])->name('edit');
-        Route::put('{draft_pekerjaan}', [DraftPekerjaanController::class, 'update'])->name('update');
-        Route::post('{draft_pekerjaan}', [DraftPekerjaanController::class, 'destroy'])->name('destroy');
-        Route::post('update-checkbox/{draft_pekerjaan}', [DraftPekerjaanController::class, 'updateCheckbox'])->name('update-checkbox');
-    });
-
-    Route::middleware('role:direktur|admin|akuntan|pengawas')->group(function () {
-        Route::get('/', [DraftPekerjaanController::class, 'index'])->name('index');
-        Route::get('search', [DraftPekerjaanController::class, 'search'])->name('search');
-        Route::get('{draft_pekerjaan}', [DraftPekerjaanController::class, 'show'])->name('show');
-    });
-});
 
 // ========================== Fitur: Transaksi Draft Pekerjaan ==========================
 Route::prefix('transaksi-draft-pekerjaan')->name('transaksi-draft-pekerjaan.')->middleware('auth')->group(function () {
