@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ArusKas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Rules\UniqueWithoutDeleted;
 
 class ArusKasController extends Controller
 {
@@ -20,38 +21,33 @@ class ArusKasController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $request->merge([
-            'jumlah' => str_replace('.', '', $request->input('jumlah'))
-        ]);
+{
+    $request->merge([
+        'jumlah' => str_replace('.', '', $request->input('jumlah'))
+    ]);
 
-        $validated = $request->validate([
-            'tanggal'    => 'required|date',
-            'keterangan' => 'nullable|string|max:255',
-            'jenis'      => 'required|in:masuk,keluar',
-            'kategori'   => 'required|in:operasional,investasi,pendanaan',
-            'jumlah'     => 'required|numeric|min:0',
-        ]);
+    $input = $request->all();
 
-        // Cek apakah data yang sama sudah ada (untuk menghindari duplikasi)
-        $exists = ArusKas::where('is_deleted', 0)
-            ->where('tanggal', $validated['tanggal'])
-            ->where('jenis', $validated['jenis'])
-            ->where('jumlah', $validated['jumlah'])
-            ->exists();
+    $validated = $request->validate([
+        'tanggal'    => [
+            'required',
+            'date',
+            new UniqueWithoutDeleted(ArusKas::class, ['tanggal', 'jenis', 'jumlah'], $input)
+        ],
+        'keterangan' => 'nullable|string|max:255',
+        'jenis'      => 'required|in:masuk,keluar',
+        'kategori'   => 'required|in:operasional,investasi,pendanaan',
+        'jumlah'     => 'required|numeric|min:0',
+    ]);
 
-        if ($exists) {
-            return back()->withInput()->with('failed', 'Data dengan tanggal, jenis, dan jumlah yang sama sudah ada.');
-        }
-
-        try {
-            ArusKas::create($validated);
-            return redirect()->route('arus-kas.index')->with('success', 'Data Arus Kas berhasil ditambahkan.');
-        } catch (\Exception $e) {
-            Log::error('Gagal menambahkan Arus Kas: ' . $e->getMessage());
-            return back()->with('failed', 'Terjadi kesalahan.')->withInput();
-        }
+    try {
+        ArusKas::create($validated);
+        return redirect()->route('arus-kas.index')->with('success', 'Data Arus Kas berhasil ditambahkan.');
+    } catch (\Exception $e) {
+        Log::error('Gagal menambahkan Arus Kas: ' . $e->getMessage());
+        return back()->with('failed', 'Terjadi kesalahan.')->withInput();
     }
+}
 
 
 
