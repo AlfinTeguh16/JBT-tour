@@ -54,7 +54,7 @@ class NeracaController extends Controller
                 'biaya_telepon'      => 'required|numeric',
             ]);
 
-            // ✅ Cek duplikat berdasarkan semua field kecuali is_deleted
+            // Cek duplikat berdasarkan semua field kecuali is_deleted
             $isDuplicate = Neraca::where('bulan', $validated['bulan'])
                 ->where('biaya_spidi', $validated['biaya_spidi'])
                 ->where('biaya_listrik', $validated['biaya_listrik'])
@@ -112,13 +112,13 @@ class NeracaController extends Controller
         try {
             // Validasi data input
             $validated = $request->validate([
-                'bulan'    => 'required|string|max:255',
-                'biaya_spidi'          => 'required|float',
-                'biaya_listril'       => 'required|float',
-                'biaya_air_minum'    => 'required|float',
-                'gaji_karyawan' => 'required|float',
-                'modal_perusahaan' => 'required|float',
-                'biaya_telepon'     => 'required|float',
+                'bulan'             => 'required|string|max:255',
+                'biaya_spidi'       => 'required|numeric',
+                'biaya_listrik'     => 'required|numeric',
+                'biaya_air_minum'   => 'required|numeric',
+                'gaji_karyawan'     => 'required|numeric',
+                'modal_perusahaan'  => 'required|numeric',
+                'biaya_telepon'     => 'required|numeric',
             ]);
 
             // Simpan data ke database
