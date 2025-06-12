@@ -17,11 +17,11 @@ return new class extends Migration
                 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
                 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
             ]);
-            $table->string('data_karyawan')->nuallable();
-            $table->string('draft_pekerjaan')->nuallable();
-            $table->string('transaksi_draft_pekerjaan')->nuallable();
-            $table->string('status_transaksi')->nuallable();
-            $table->string('status_draft_pekerjaan')->nuallable();
+            $table->string('data_karyawan')->default(0);
+            $table->string('draft_pekerjaan')->default(0);
+            $table->string('transaksi_draft_pekerjaan')->default(0);
+            $table->string('status_transaksi')->default(0);
+            $table->string('status_draft_pekerjaan')->default(0);
             $table->float('biaya_spidi')->default(0);
             $table->float('biaya_listrik')->default(0);
             $table->float('biaya_air_minum')->default(0);

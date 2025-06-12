@@ -130,6 +130,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             <td class="px-6 py-4 whitespace-nowrap text-sm">${item.nama}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">${item.email}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">${item.no_telepon}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">${item.jabatan}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm space-x-1">${aksiButtons}</td>
                         `;
 

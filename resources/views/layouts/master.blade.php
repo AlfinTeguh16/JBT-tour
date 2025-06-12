@@ -9,16 +9,16 @@
     @vite('resources/css/app.css')
 </head>
 <body class="min-h-screen bg-gray-50 flex">
-    
+
     @include('layouts.navigation')
 
-    <div 
-        x-data="{ show: true }" 
-        x-init="setTimeout(() => show = false, 3000)" 
+    <div
+        x-data="{ show: true }"
+        x-init="setTimeout(() => show = false, 3000)"
         x-show="show"
         x-transition
         class="fixed top-4 right-4 z-50 space-y-4 w-80">
-        
+
         @if(session('success'))
             <div class="bg-green-50 border border-green-200 text-green-800 rounded-lg shadow p-4">
                 <strong class="block text-sm font-medium">Success</strong>
@@ -34,20 +34,20 @@
         @endif
     </div>
 
-    
-    
+
+
 
     <div class="flex-1 flex flex-col">
-    
+
         @include('layouts.header')
 
         <main class="p-6">
-            
+
             @yield('content')
-        
+
         </main>
     </div>
-    
+
     <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
@@ -55,24 +55,32 @@
             const openMenuBtn = document.getElementById('open-menu');
             const navigation = document.getElementById('navigation');
             const closeMenuBtn = document.getElementById('close-menu');
-    
+
             openMenuBtn.addEventListener('click', function () {
                 navigation.classList.remove('hidden');
                 setTimeout(() => {
                     navigation.classList.remove('-translate-x-full');
                     navigation.classList.add('translate-x-0');
-                }, 10); 
+                }, 10);
             });
-    
+
             closeMenuBtn.addEventListener('click', function () {
                 navigation.classList.remove('translate-x-0');
                 navigation.classList.add('-translate-x-full');
-    
+
                 setTimeout(() => {
                     navigation.classList.add('hidden');
                 }, 300);
             });
         });
-    </script>    
+    </script>
+    <script>
+  document.addEventListener('alpine:init', () => {
+    Alpine.store('menu', {
+      open: false
+    });
+  });
+</script>
+
 </body>
 </html>

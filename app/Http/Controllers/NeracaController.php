@@ -33,7 +33,17 @@ class NeracaController extends Controller
      */
     public function store(Request $request)
     {
+         Log::debug('Fungsi store() dipanggil');
         // dd($request->all());
+         $request->merge([
+            'biaya_spidi'      => str_replace('.', '', $request->input('biaya_spidi')),
+            'biaya_listrik'    => str_replace('.', '', $request->input('biaya_listrik')),
+            'biaya_air_minum'  => str_replace('.', '', $request->input('biaya_air_minum')),
+            'gaji_karyawan'    => str_replace('.', '', $request->input('gaji_karyawan')),
+            'modal_perusahaan' => str_replace('.', '', $request->input('modal_perusahaan')),
+            'biaya_telepon'    => str_replace('.', '', $request->input('biaya_telepon')),
+        ]);
+
         try {
             // Validasi data input
             $validated = $request->validate([
@@ -45,16 +55,25 @@ class NeracaController extends Controller
                 'modal_perusahaan'   => 'required|numeric',
                 'biaya_telepon'      => 'required|numeric',
             ]);
-            
-            // Simpan data ke database
-            Neraca::create($validated);
-    
+
+            // Neraca::create($validated);
+            $neraca = new Neraca();
+            $neraca->bulan = $validated['bulan'];
+            $neraca->biaya_spidi = $validated['biaya_spidi'];
+            $neraca->biaya_listrik = $validated['biaya_listrik'];
+            $neraca->biaya_air_minum = $validated['biaya_air_minum'];
+            $neraca->gaji_karyawan = $validated['gaji_karyawan'];
+            $neraca->modal_perusahaan = $validated['modal_perusahaan'];
+            $neraca->biaya_telepon = $validated['biaya_telepon'];
+            $neraca->save();
+            Log::debug('Data berhasil disimpan manual');
+
             return redirect()->route('data-neraca.index')->with('success', 'Data Neraca berhasil dibuat!');
-        
+
         } catch (\Exception $e) {
             // Log error untuk debugging
             Log::error('Gagal menyimpan Data Neraca: ' . $e->getMessage());
-    
+
             // Redirect kembali dengan pesan error
             return redirect()->back()->withErrors(['failed' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi!'])->withInput();
         }
@@ -94,20 +113,20 @@ class NeracaController extends Controller
                 'modal_perusahaan' => 'required|float',
                 'biaya_telepon'     => 'required|float',
             ]);
-    
+
             // Simpan data ke database
             $neraca = Neraca::findOrFail($id);
-    
+
             // Update data
             $neraca->update($validated);
             $neraca->save();
-    
+
             return redirect()->route('data-neraca.index')->with('success', 'Data Neraca berhasil diperbarui!');
-        
+
         } catch (\Exception $e) {
             // Log error untuk debugging
             Log::error('Gagal memperbarui Data Neraca: ' . $e->getMessage());
-    
+
             // Redirect kembali dengan pesan error
             return redirect()->back()->withErrors(['failed' => 'Terjadi kesalahan saat memperbarui data. Silakan coba lagi!'])->withInput();
         }
@@ -121,10 +140,10 @@ class NeracaController extends Controller
         try {
             // Cari data berdasarkan ID
             $neraca = Neraca::findOrFail($id);
-    
+
             // Update kolom is_deleted menjadi true (1)
             $neraca->update(['is_deleted' => true]);
-    
+
             return redirect()->route('data-neraca.index')->with('success', 'Data Neraca berhasil dinonaktifkan!');
         } catch (\Exception $e) {
             \Log::error('Gagal menghapus Data Neraca: ' . $e->getMessage());

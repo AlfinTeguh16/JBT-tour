@@ -48,7 +48,7 @@ class DraftPekerjaanController extends Controller
 
             // Buat code_draft unik
             $validated['code_draft'] = 'DRAFT-' . Str::upper(Str::random(8));
-
+            dd($validated);
             // Upload dokumen penawaran jika ada
             if ($request->hasFile('dokumen_penawaran')) {
                 $validated['dokumen_penawaran'] = $request->file('dokumen_penawaran')->store('dokumen_penawaran', 'public');
@@ -112,13 +112,13 @@ class DraftPekerjaanController extends Controller
                 'dokumen_penawaran' => 'nullable|file|mimes:pdf,doc,docx,xls|max:2048',
                 'alamat_proyek'     => 'required|string',
             ]);
-    
+
             // Ambil data yang akan diperbarui
             $draftPekerjaan = DraftPekerjaan::findOrFail($id);
-    
+
             // Update data
             $draftPekerjaan->update($validated);
-    
+
             // Jika ada file baru, simpan & hapus file lama
             if ($request->hasFile('dokumen_penawaran')) {
                 // Hapus file lama jika ada
@@ -129,10 +129,10 @@ class DraftPekerjaanController extends Controller
                 $validated['dokumen_penawaran'] = $request->file('dokumen_penawaran')->store('dokumen_penawaran', 'public');
                 $draftPekerjaan->dokumen_penawaran = $validated['dokumen_penawaran'];
             }
-    
+
             // Simpan perubahan ke database
             $draftPekerjaan->save();
-    
+
             return redirect()->route('draft-pekerjaan.index')->with('success', 'Draft Pekerjaan berhasil diperbarui!');
         } catch (\Exception $e) {
             \Log::error('Gagal memperbarui Draft Pekerjaan: ' . $e->getMessage());

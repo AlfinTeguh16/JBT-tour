@@ -33,7 +33,7 @@ class KaryawanController extends Controller
         $validated = $request->validate([
             'nama'          => 'required|string|max:255',
             'no_telepon'    => 'required|string|max:20',
-            'email'    => 'required|string|max:20',
+            'email'         => 'required|string|max:100',
             'tanggal_lahir' => 'required|date',
             'tempat_lahir'  => 'required|string|max:100',
             'jenis_kelamin' => 'required|in:L,P',
@@ -41,10 +41,30 @@ class KaryawanController extends Controller
             'jabatan'       => 'required|string|max:100',
         ]);
 
+        // Cek duplikasi berdasarkan: (1) nama + no_telepon atau (2) email
+        $userExists = Karyawan::where('is_deleted', 0)
+            ->where(function ($query) use ($validated) {
+                $query->where(function ($q) use ($validated) {
+                    $q->where('nama', $validated['nama'])
+                    ->where('no_telepon', $validated['no_telepon']);
+                })->orWhere('email', $validated['email'])
+                ->orWhere(function ($q) use ($validated) {
+                    $q->where('nama', $validated['nama'])
+                        ->where('email', $validated['email']);
+                });
+            })
+            ->exists();
+
+        if ($userExists) {
+            return back()->withInput()->with('failed', 'Data karyawan dengan nama dan kontak yang sama sudah ada.');
+        }
+
+
+
         // Generate auto ID
         $last = Karyawan::selectRaw("MAX(CAST(SUBSTRING(id_karyawan, 3) AS UNSIGNED)) as max_id")
                         ->first()->max_id ?? 0;
-        $validated['id_karyawan'] = 'KR'.str_pad($last + 1, 4, '0', STR_PAD_LEFT);
+        $validated['id_karyawan'] = 'KR' . str_pad($last + 1, 4, '0', STR_PAD_LEFT);
 
         // Map jenis_kelamin ke tinyint
         $validated['jenis_kelamin'] = $validated['jenis_kelamin'] === 'L' ? 1 : 0;
@@ -57,11 +77,12 @@ class KaryawanController extends Controller
             return redirect()->route('karyawan.index')
                             ->with('success', 'Karyawan berhasil ditambahkan!');
         } catch (\Throwable $th) {
-            \Log::error('Error saving karyawan: '.$th->getMessage());
+            \Log::error('Error saving karyawan: ' . $th->getMessage());
             return back()->withInput()
                         ->with('failed', 'Gagal menyimpan data karyawan. Silakan coba lagi.');
         }
     }
+
 
 
 
@@ -90,7 +111,7 @@ class KaryawanController extends Controller
         $validated = $request->validate([
             'nama'          => 'required|string|max:255',
             'no_telepon'    => 'required|string|max:20',
-            'email'         => 'required|email|max:255|unique:tb_karyawan,email,' . $karyawan->id,
+            'email'         => 'required|email|max:255',
             'tanggal_lahir' => 'required|date',
             'tempat_lahir'  => 'required|string|max:100',
             'jenis_kelamin' => 'required|in:L,P',
@@ -98,23 +119,40 @@ class KaryawanController extends Controller
             'jabatan'       => 'required|string|max:100',
         ]);
 
-        // Map jenis_kelamin ke tinyint
+        // Cek apakah ada karyawan lain yang duplikat nama + no_telepon atau email
+        $isDuplicate = Karyawan::where('id_karyawan', '!=', $karyawan->id_karyawan)
+            ->where('is_deleted', 0)
+            ->where(function ($query) use ($validated) {
+                $query->where(function ($q) use ($validated) {
+                    $q->where('nama', $validated['nama'])
+                    ->where('no_telepon', $validated['no_telepon']);
+                })->orWhere('email', $validated['email'])
+                ->orWhere(function ($q) use ($validated) {
+                    $q->where('nama', $validated['nama'])
+                        ->where('email', $validated['email']);
+                });
+            })
+            ->exists();
+
+        if ($isDuplicate) {
+            return back()->withInput()->with('failed', 'Data serupa sudah terdaftar.');
+        }
+
         $validated['jenis_kelamin'] = $validated['jenis_kelamin'] === 'L' ? 1 : 0;
 
         try {
             $karyawan->update($validated);
-
             return redirect()
                 ->route('karyawan.show', $karyawan)
                 ->with('success', 'Data karyawan berhasil diperbarui!');
         } catch (\Throwable $e) {
             \Log::error('Error updating karyawan: ' . $e->getMessage());
-
             return back()
                 ->withInput()
                 ->with('failed', 'Gagal memperbarui data karyawan. Silakan coba lagi.');
         }
     }
+
 
 
     /**
@@ -141,7 +179,7 @@ class KaryawanController extends Controller
                 ->orWhere('email', 'LIKE', "%{$keyword}%")
                 ->orWhere('jabatan', 'LIKE', "%{$keyword}%");
         })
-        ->get(); 
+        ->get();
 
     return response()->json($karyawan);
     }
