@@ -12,7 +12,7 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database.
      */
-    public function run(): void 
+    public function run(): void
     {
 
         $this->call([
@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
             NeracaSeeder::class,
             ArusKasSeeder::class,
             LabaRugiSeeder::class,
-            JurnalUmumSeeder::class,
+            // JurnalUmumSeeder::class,
             PerubahanModalSeeder::class,
         ]);
     }

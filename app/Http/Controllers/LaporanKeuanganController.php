@@ -4,9 +4,19 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\LaporanKeuangan;
+use App\Models\DraftPekerjaan;
+use App\Models\TransaksiDraftPekerjaan;
+use App\Models\ArusKas;
+use App\Models\LabaRugi;
+use App\Models\PerubahanModal;
+use App\Models\Neraca;
+use App\Models\JurnalUmum;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\LaporanKeuanganExport;
 
 class LaporanKeuanganController extends Controller
 {
@@ -87,8 +97,91 @@ class LaporanKeuanganController extends Controller
     {
         $laporan = LaporanKeuangan::findOrFail($id);
 
-        return view('activities.laporan-keuangan.show', compact('laporan'));
+        $bulan = $laporan->created_at->format('m');
+        $tahun = $laporan->created_at->format('Y');
+
+        $draftPekerjaan = DraftPekerjaan::whereMonth('created_at', $bulan)
+            ->whereYear('created_at', $tahun)->get();
+
+        $transaksiDraft = TransaksiDraftPekerjaan::whereMonth('created_at', $bulan)
+            ->whereYear('created_at', $tahun)->get();
+
+        $arusKas = ArusKas::whereMonth('tanggal', $bulan)
+            ->whereYear('tanggal', $tahun)->get();
+
+        $labaRugi = LabaRugi::whereMonth('tanggal', $bulan)
+            ->whereYear('tanggal', $tahun)->get();
+
+        $perubahanModal = PerubahanModal::whereMonth('tanggal', $bulan)
+            ->whereYear('tanggal', $tahun)->get();
+
+        $neraca = Neraca::whereMonth('bulan', $bulan)
+            ->whereYear('bulan', $tahun)->get();
+
+        $jurnalUmum = JurnalUmum::whereMonth('tanggal', $bulan)
+            ->whereYear('tanggal', $tahun)
+            ->where('is_deleted', false)->get();
+
+        return view('activities.laporan-keuangan.show', compact(
+            'laporan',
+            'draftPekerjaan',
+            'transaksiDraft',
+            'arusKas',
+            'labaRugi',
+            'perubahanModal',
+            'neraca',
+            'jurnalUmum'
+        ));
     }
+
+    public function exportPdf($id)
+    {
+        $laporan = LaporanKeuangan::findOrFail($id);
+
+        $bulan = $laporan->created_at->format('m');
+        $tahun = $laporan->created_at->format('Y');
+
+        $draftPekerjaan = DraftPekerjaan::whereMonth('created_at', $bulan)
+            ->whereYear('created_at', $tahun)->get();
+
+        $transaksiDraft = TransaksiDraftPekerjaan::whereMonth('created_at', $bulan)
+            ->whereYear('created_at', $tahun)->get();
+
+        $arusKas = ArusKas::whereMonth('tanggal', $bulan)
+            ->whereYear('tanggal', $tahun)->get();
+
+        $labaRugi = LabaRugi::whereMonth('tanggal', $bulan)
+            ->whereYear('tanggal', $tahun)->get();
+
+        $perubahanModal = PerubahanModal::whereMonth('tanggal', $bulan)
+            ->whereYear('tanggal', $tahun)->get();
+
+        $neraca = Neraca::whereMonth('bulan', $bulan)
+            ->whereYear('bulan', $tahun)->get();
+
+        $jurnalUmum = JurnalUmum::whereMonth('tanggal', $bulan)
+            ->whereYear('tanggal', $tahun)
+            ->where('is_deleted', false)->get();
+
+        $pdf = Pdf::loadView('activities.laporan-keuangan.export-pdf', compact(
+            'laporan',
+            'draftPekerjaan',
+            'transaksiDraft',
+            'arusKas',
+            'labaRugi',
+            'perubahanModal',
+            'neraca',
+            'jurnalUmum'
+        ))->setPaper('a4', 'landscape');
+
+        return $pdf->download('laporan-keuangan-' . $id . '.pdf');
+    }
+
+    public function exportExcel($id)
+    {
+        return Excel::download(new LaporanKeuanganExport($id), 'laporan-keuangan-' . $id . '.xlsx');
+    }
+
 
     /**
      * Show the form for editing the specified resource.

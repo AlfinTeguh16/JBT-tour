@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\JurnalUmum;
+use App\Models\LaporanKeuangan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Rules\UniqueWithoutDeleted;
+use Illuminate\Support\Facades\DB;
 
 class JurnalUmumController extends Controller
 {
@@ -50,8 +52,19 @@ class JurnalUmumController extends Controller
                 ->withErrors(['duplicate' => 'Data jurnal dengan kombinasi ini sudah ada dan masih aktif.']);
         }
 
+        DB::beginTransaction();
         try {
-            JurnalUmum::create($validated);
+            // Simpan jurnal
+            $jurnal = JurnalUmum::create($validated);
+
+            // Buat entri laporan keuangan terkait (nama bisa disesuaikan dengan logika Anda)
+            LaporanKeuangan::create([
+                'laporan_keuangan' => 'Jurnal tanggal ' . $validated['tanggal'],
+                'status_laporan'   => 'belum tervalidasi',
+                'is_deleted'       => false,
+            ]);
+
+            DB::commit();
 
             return redirect()->route('jurnal-umum.index')->with('success', 'Data jurnal umum berhasil ditambahkan.');
         } catch (\Exception $e) {

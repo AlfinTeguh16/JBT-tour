@@ -128,6 +128,7 @@ Route::prefix('laporan-keuangan')->name('laporan-keuangan.')->middleware('auth')
         Route::get('{id}/edit', [LaporanKeuanganController::class, 'edit'])->name('edit');
         Route::put('{id}', [LaporanKeuanganController::class, 'update'])->name('update');
         Route::post('{id}', [LaporanKeuanganController::class, 'destroy'])->name('destroy');
+
     });
 
     Route::middleware('role:direktur')->put('{id}/status', [LaporanKeuanganController::class, 'updateStatus'])->name('update-status');
@@ -135,7 +136,9 @@ Route::prefix('laporan-keuangan')->name('laporan-keuangan.')->middleware('auth')
     Route::middleware('role:direktur|admin|akuntan|pengawas')->group(function () {
         Route::get('/', [LaporanKeuanganController::class, 'index'])->name('index');
         Route::get('search', [LaporanKeuanganController::class, 'search'])->name('search');
-        Route::get('{id}', [LaporanKeuanganController::class, 'show'])->name('show');
+        Route::get('/{id}', [LaporanKeuanganController::class, 'show'])->name('show');
+        Route::get('/{id}/export/pdf', [LaporanKeuanganController::class, 'exportPdf'])->name('export.pdf');
+        Route::get('/{id}/export/excel', [LaporanKeuanganController::class, 'exportExcel'])->name('export.excel');
     });
 });
 

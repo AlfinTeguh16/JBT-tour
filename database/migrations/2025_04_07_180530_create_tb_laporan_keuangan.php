@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('tb_laporan_keuangan', function (Blueprint $table) {
             $table->id();
-            $table->string('file_laporan_keuangan');
+            $table->string('laporan_keuangan')->nullable();
             $table->enum('status_laporan',['tervalidasi', 'belum tervalidasi']);
             $table->boolean('is_deleted')->default(false);
             $table->timestamps();
