@@ -2,7 +2,7 @@
 @section('title', 'Detail Laporan Keuangan')
 @section('content')
 
-<div class="max-w-7xl mx-auto p-6">
+<div class=" mx-auto p-6">
     <h1 class="text-2xl font-bold mb-4 text-gray-800">Detail Laporan Keuangan</h1>
 
     <div class="bg-white shadow rounded p-4 mb-6">

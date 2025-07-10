@@ -17,11 +17,11 @@
     </div>
     @endif
 
-    <div class="mb-4 w-full flex justify-end">
+    {{-- <div class="mb-4 w-full flex justify-end">
       <input name="search" type="text" id="search" placeholder="Cari Laporan Keuangan..."
       onkeyup="ajaxSearch()"
       class="w-fit rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"/>
-    </div>
+    </div> --}}
 
     <div class="bg-white shadow rounded-lg lg:max-w-[1056px]">
         <div id="scrollAbleTable" class="overflow-x-auto">
@@ -45,7 +45,7 @@
                                 @endphp
                                 {{ $bulanEnum = Bulan::from($bulanFormatted); }}
                             </td>
-                            <td class="px-6 py-4 text-sm">{{ basename($item->file_laporan_keuangan) }}</td>
+                            <td class="px-6 py-4 text-sm">{{ basename($item->laporan_keuangan) }}</td>
                             <td class="px-6 py-4 text-center text-sm space-x-1">
                                 <a href="{{ route('laporan-keuangan.show', $item->id) }}" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-blue-500 text-white hover:bg-blue-600">Detail</a>
                                 @if(auth()->user()->role === 'akuntan')

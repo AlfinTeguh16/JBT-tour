@@ -115,8 +115,8 @@ class LaporanKeuanganController extends Controller
         $perubahanModal = PerubahanModal::whereMonth('tanggal', $bulan)
             ->whereYear('tanggal', $tahun)->get();
 
-        $neraca = Neraca::whereMonth('bulan', $bulan)
-            ->whereYear('bulan', $tahun)->get();
+        $neraca = Neraca::whereMonth('created_at', $bulan)
+            ->whereYear('created_at', $tahun)->get();
 
         $jurnalUmum = JurnalUmum::whereMonth('tanggal', $bulan)
             ->whereYear('tanggal', $tahun)
@@ -156,8 +156,8 @@ class LaporanKeuanganController extends Controller
         $perubahanModal = PerubahanModal::whereMonth('tanggal', $bulan)
             ->whereYear('tanggal', $tahun)->get();
 
-        $neraca = Neraca::whereMonth('bulan', $bulan)
-            ->whereYear('bulan', $tahun)->get();
+        $neraca = Neraca::whereMonth('created_at', $bulan)
+            ->whereYear('created_at', $tahun)->get();
 
         $jurnalUmum = JurnalUmum::whereMonth('tanggal', $bulan)
             ->whereYear('tanggal', $tahun)
