@@ -34,7 +34,7 @@ class LaporanKeuanganExport implements FromView
         $arusKas = ArusKas::whereMonth('tanggal', $bulan)->whereYear('tanggal', $tahun)->get();
         $labaRugi = LabaRugi::whereMonth('tanggal', $bulan)->whereYear('tanggal', $tahun)->get();
         $perubahanModal = PerubahanModal::whereMonth('tanggal', $bulan)->whereYear('tanggal', $tahun)->get();
-        $neraca = Neraca::whereMonth('bulan', $bulan)->whereYear('bulan', $tahun)->get();
+        $neraca = Neraca::whereMonth('created_at', $bulan)->whereYear('created_at', $tahun)->get();
         $jurnalUmum = JurnalUmum::whereMonth('tanggal', $bulan)->whereYear('tanggal', $tahun)->where('is_deleted', false)->get();
 
         return view('activities.laporan-keuangan.export-excel', compact(
