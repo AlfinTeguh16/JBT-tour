@@ -7,10 +7,26 @@
 
     <div class="bg-white shadow rounded p-4 mb-6">
         <h2 class="text-lg font-semibold mb-2">Informasi Utama</h2>
-        <p><strong>Nama Laporan:</strong> {{ $laporan->laporan_keuangan ?? '-' }}</p>
+        <p><strong>Nama Laporan:</strong> Laporan Bulan {{ $laporan->created_at->format('m Y') ?? '-' }}</p>
         <p><strong>Status Laporan:</strong> {{ ucfirst($laporan->status_laporan) }}</p>
         <p><strong>Dibuat pada:</strong> {{ $laporan->created_at->format('d M Y') }}</p>
+        @if(auth()->user()->role === 'direktur')
+        <div class="mb-6">
+            <form action="{{ route('laporan-keuangan.update-status', $laporan->id) }}" method="post">
+                @csrf
+                @method('PUT')
+                <select name="status_laporan" id="status_laporan" class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="belum tervalidasi">Belum Tervalidasi</option>
+                    <option value="tervalidasi">Tervalidasi</option>
+                </select>
+                <x-button type="submit" variant="primary" class="ml-2 px-4 py-2">
+                    Simpan Status
+                </x-button>
+            </form>
+        </div>
+        @endif
     </div>
+    @if($laporan->status_laporan === 'tervalidasi')
     <div class="flex gap-4 mt-4">
         <a href="{{ route('laporan-keuangan.export.pdf', $laporan->id) }}"
         class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
@@ -21,6 +37,7 @@
             Unduh Excel
         </a>
     </div>
+    @endif
 
 
     @php

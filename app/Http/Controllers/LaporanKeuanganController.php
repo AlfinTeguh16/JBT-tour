@@ -194,35 +194,24 @@ class LaporanKeuanganController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function updateStatus(Request $request, string $id)
     {
         try {
-            $request->validate([
-                'file_laporan_keuangan' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
-            ]);
-
             $laporan = LaporanKeuangan::findOrFail($id);
 
-            // Jika file baru diupload, ganti yang lama
-            if ($request->hasFile('file_laporan_keuangan')) {
-                // Hapus file lama jika ada
-                if ($laporan->file_laporan_keuangan && Storage::disk('public')->exists($laporan->file_laporan_keuangan)) {
-                    Storage::disk('public')->delete($laporan->file_laporan_keuangan);
-                }
+            // Validasi input
+            $request->validate([
+                'status_laporan' => 'required|in:tervalidasi,belum tervalidasi',
+            ]);
 
-                // Simpan file baru dengan nama aslinya
-                $file = $request->file('file_laporan_keuangan');
-                $path = $file->storeAs('file_laporan_keuangan', $file->getClientOriginalName(), 'public');
-
-                $laporan->file_laporan_keuangan = $path;
-            }
-
+            // Update status laporan
+            $laporan->status_laporan = $request->status_laporan;
             $laporan->save();
 
-            return redirect()->back()->with('success', 'Laporan Keuangan berhasil diperbarui.');
+            return redirect()->back()->with('success', 'Status laporan berhasil diperbarui.');
         } catch (\Exception $e) {
-            Log::error('Gagal update laporan keuangan: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat memperbarui laporan.');
+            \Log::error('Gagal memperbarui status laporan: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memperbarui status laporan.');
         }
     }
 
@@ -248,20 +237,20 @@ class LaporanKeuanganController extends Controller
         }
     }
 
-    public function updateStatus(Request $request, string $id){
-        try {
-            $request->validate([
-                'status_laporan' => 'required|in:tervalidasi,belum tervalidasi',
-            ]);
+    // public function updateStatus(Request $request, string $id){
+    //     try {
+    //         $request->validate([
+    //             'status_laporan' => 'required|in:tervalidasi,belum tervalidasi',
+    //         ]);
 
-            $laporan = LaporanKeuangan::findOrFail($id);
-            $laporan->status_laporan = $request->status_laporan;
-            $laporan->save();
+    //         $laporan = LaporanKeuangan::findOrFail($id);
+    //         $laporan->status_laporan = $request->status_laporan;
+    //         $laporan->save();
 
-            return redirect()->back()->with('success', 'Status laporan berhasil diperbarui.');
-        } catch (\Exception $e) {
-            \Log::error('Gagal memperbarui status laporan: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal memperbarui status laporan.');
-        }
-    }
+    //         return redirect()->back()->with('success', 'Status laporan berhasil diperbarui.');
+    //     } catch (\Exception $e) {
+    //         \Log::error('Gagal memperbarui status laporan: ' . $e->getMessage());
+    //         return redirect()->back()->with('error', 'Gagal memperbarui status laporan.');
+    //     }
+    // }
 }
