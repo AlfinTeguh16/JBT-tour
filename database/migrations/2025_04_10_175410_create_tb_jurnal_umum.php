@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('tb_jurnal_umum', function (Blueprint $table) {
             $table->id();
+            $table->string('transaksi');
             $table->date('tanggal');
             $table->string('keterangan', 255)->nullable();
             $table->string('akun_debet', 100)->nullable();

@@ -32,15 +32,17 @@ class JurnalUmumController extends Controller
         ]);
 
         $validated = $request->validate([
+            'transaksi'  => 'required|string|max:255',
             'tanggal'     => 'required|date',
             'keterangan'  => 'nullable|string|max:255',
-            'akun_debet'  => 'required|string|max:100',
-            'akun_kredit' => 'required|string|max:100',
+            'akun_debet'  => 'nullable|string|max:100',
+            'akun_kredit' => 'nullable|string|max:100',
             'jumlah'      => 'required|numeric|min:0',
         ]);
 
         // Cek apakah data dengan kombinasi ini sudah ada dan belum dihapus
         $exists = JurnalUmum::where('is_deleted', 0)
+            ->where('transaksi', $validated['transaksi'])
             ->where('tanggal', $validated['tanggal'])
             ->where('akun_debet', $validated['akun_debet'])
             ->where('akun_kredit', $validated['akun_kredit'])
@@ -84,10 +86,11 @@ class JurnalUmumController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
+            'transaksi'  => 'required|string|max:255',
             'tanggal' => 'required|date',
             'keterangan' => 'nullable|string|max:255',
-            'akun_debet' => 'required|string|max:100',
-            'akun_kredit' => 'required|string|max:100',
+            'akun_debet' => 'nullable|string|max:100',
+            'akun_kredit' => 'nullable|string|max:100',
             'jumlah' => 'required|numeric|min:0',
         ]);
 
@@ -95,6 +98,7 @@ class JurnalUmumController extends Controller
             $jurnal = JurnalUmum::findOrFail($id);
             $cleanJumlah = str_replace('.', '', $request->jumlah);
             $jurnal->update([
+                'transaksi'  => $request->transaksi,
                 'tanggal' => $request->tanggal,
                 'keterangan' => $request->keterangan,
                 'akun_debet' => $request->akun_debet,
@@ -136,7 +140,8 @@ class JurnalUmumController extends Controller
             ->where(function ($query) use ($keyword) {
                 $query->where('keterangan', 'LIKE', "%{$keyword}%")
                     ->orWhere('akun_debet', 'LIKE', "%{$keyword}%")
-                    ->orWhere('akun_kredit', 'LIKE', "%{$keyword}%");
+                    ->orWhere('akun_kredit', 'LIKE', "%{$keyword}%")
+                    ->orWhere('transaksi', 'LIKE', "%{$keyword}%");
             })
             ->get();
 

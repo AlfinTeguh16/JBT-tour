@@ -12,6 +12,7 @@ class JurnalUmum extends Model
     protected $table = 'tb_jurnal_umum';
 
     protected $fillable = [
+        'transaksi',
         'tanggal',
         'keterangan',
         'akun_debet',
