@@ -35,25 +35,31 @@
                     </tr>
                 </thead>
                 <tbody id="dataArusKas" class="bg-white divide-y divide-gray-200">
-                    @foreach($arusKas as $i => $item)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $loop->iteration }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $item->tanggal->format('d-m-Y') }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $item->keterangan ?? '-' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm capitalize">{{ $item->jenis }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm capitalize">{{ $item->kategori }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">Rp {{ number_format($item->jumlah, 2, ',', '.') }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm space-x-1">
-                              <a href="{{ route('arus-kas.show', $item) }}" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-blue-500 text-white hover:bg-blue-600">Detail</a>
-                              @if(auth()->user()->role === 'akuntan')
-                                <a href="{{ route('arus-kas.edit', $item) }}" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-yellow-400 text-white hover:bg-yellow-500">Edit</a>
-                                <button @click="open = true; target = '{{ $item->id }}'" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-red-500 text-white hover:bg-red-600">
-                                    Hapus
-                                </button>
-                              @endif
-                            </td>
+                    @if($arusKas->isEmpty())
+                        <tr>
+                            <td colspan="7" class="text-center text-sm text-gray-500 py-4">Data Arus Kas tidak ditemukan.</td>
                         </tr>
-                    @endforeach
+                    @else
+                        @foreach($arusKas as $i => $item)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $loop->iteration }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $item->tanggal->format('d-m-Y') }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $item->keterangan ?? '-' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm capitalize">{{ $item->jenis }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm capitalize">{{ $item->kategori }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">Rp {{ number_format($item->jumlah, 2, ',', '.') }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm space-x-1">
+                                <a href="{{ route('arus-kas.show', $item) }}" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-blue-500 text-white hover:bg-blue-600">Detail</a>
+                                @if(auth()->user()->role === 'akuntan')
+                                    <a href="{{ route('arus-kas.edit', $item) }}" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-yellow-400 text-white hover:bg-yellow-500">Edit</a>
+                                    <button @click="open = true; target = '{{ $item->id }}'" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-red-500 text-white hover:bg-red-600">
+                                        Hapus
+                                    </button>
+                                @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    @endif
                 </tbody>
             </table>
         </div>
@@ -84,14 +90,14 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
       let searchTimer;
-  
+
       window.ajaxSearch = function () {
           clearTimeout(searchTimer);
           searchTimer = setTimeout(() => {
               const keyword = document.getElementById('search').value;
               const url = "{{ route('arus-kas.search') }}";
               const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-  
+
               fetch(`${url}?keyword=${encodeURIComponent(keyword)}`, {
                   headers: {
                       'Accept': 'application/json',
@@ -103,20 +109,20 @@
               .then(data => {
                   const tbody = document.getElementById('dataArusKas');
                   tbody.innerHTML = "";
-  
+
                   if (data.length > 0) {
                       data.forEach((item, index) => {
                           const tr = document.createElement('tr');
                           tr.classList.add('hover:bg-gray-50');
-  
+
                           let aksiButtons = `
-                              <a href="{{ route('arus-kas.show', $item) }}" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-blue-500 text-white hover:bg-blue-600">Detail</a>
+                              <a href="{{ route('arus-kas.show', $arusKas) }}" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-blue-500 text-white hover:bg-blue-600">Detail</a>
                               <a href="/arus-kas/${item.id}/edit" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-yellow-400 text-white hover:bg-yellow-500">Edit</a>
                               <button onclick="openDeleteModal(${item.id})" class="inline-flex px-2 py-1 text-xs font-medium rounded bg-red-500 text-white hover:bg-red-600">
                                   Hapus
                               </button>
                           `;
-  
+
                           tr.innerHTML = `
                               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${index + 1}</td>
                               <td class="px-6 py-4 whitespace-nowrap text-sm">${formatDate(item.tanggal)}</td>
@@ -126,7 +132,7 @@
                               <td class="px-6 py-4 whitespace-nowrap text-sm">Rp ${formatRupiah(item.jumlah)}</td>
                               <td class="px-6 py-4 whitespace-nowrap text-center text-sm space-x-1">${aksiButtons}</td>
                           `;
-  
+
                           tbody.appendChild(tr);
                       });
                   } else {
@@ -136,12 +142,12 @@
               .catch(error => console.error('Error:', error));
           }, 500);
       };
-  
+
       function formatDate(dateStr) {
           const date = new Date(dateStr);
           return date.toLocaleDateString('id-ID');
       }
-  
+
       function formatRupiah(value) {
           return parseFloat(value).toLocaleString('id-ID', {
               minimumFractionDigits: 2,
@@ -150,6 +156,6 @@
       }
   });
 </script>
-  
+
 
 @endsection
