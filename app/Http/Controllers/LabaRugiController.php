@@ -25,13 +25,31 @@ class LabaRugiController extends Controller
     public function store(Request $request)
     {
         // Hapus pemisah ribuan jika ada
-        $request->merge(['jumlah' => str_replace('.', '', $request->jumlah)]);
+        $request->merge([
+            'jumlah' => str_replace('.', '', $request->jumlah),
+            'harga_pokok_jasa' => str_replace('.', '', $request->input('harga_pokok_jasa')),
+            'laba_kotor' => str_replace('.', '', $request->input('laba_kotor')),
+            'biaya_gaji' => str_replace('.', '', $request->input('biaya_gaji')),
+            'beban_meeting' => str_replace('.', '', $request->input('beban_meeting')),
+            'beban_lain_lain' => str_replace('.', '', $request->input('beban_lain_lain')),
+            'jumlah_beban_operasi' => str_replace('.', '', $request->input('jumlah_beban_operasi')),
+            'laba_bersih_operasional' => str_replace('.', '', $request->input('laba_bersih_operasional')),
+            'laba_bersih' => str_replace('.', '', $request->input('laba_bersih')),
+        ]);
 
         $validated = $request->validate([
-            'tanggal'     => 'required|date',
-            'jenis'       => 'required|in:pendapatan,beban',
-            'keterangan'  => 'nullable|string|max:255',
-            'jumlah'      => 'required|numeric|min:0',
+            'tanggal'               => 'required|date',
+            'jenis'                 => 'required|in:pendapatan,beban',
+            'keterangan'            => 'nullable|string|max:255',
+            'harga_pokok_jasa'      => 'required|numeric|min:0',
+            'laba_kotor'            => 'required|numeric|min:0',
+            'biaya_gaji'            => 'required|numeric|min:0',
+            'beban_meeting'         => 'required|numeric|min:0',
+            'beban_lain_lain'       => 'required|numeric|min:0',
+            'jumlah_beban_operasi'  => 'required|numeric|min:0',
+            'laba_bersih_operasional' => 'required|numeric|min:0',
+            'laba_bersih'           => 'required|numeric|min:0',
+            'jumlah'                => 'required|numeric|min:0',
         ]);
 
         // Cek apakah data dengan kombinasi ini sudah ada dan masih aktif
@@ -56,6 +74,7 @@ class LabaRugiController extends Controller
         }
     }
 
+
     public function edit($id)
     {
         $labaRugi = LabaRugi::findOrFail($id);
@@ -64,24 +83,44 @@ class LabaRugiController extends Controller
 
     public function update(Request $request, $id)
     {
-        $request->merge(['jumlah' => str_replace('.', '', $request->jumlah)]);
+        // Hapus pemisah ribuan jika ada
+        $request->merge([
+            'jumlah' => str_replace('.', '', $request->jumlah),
+            'harga_pokok_jasa' => str_replace('.', '', $request->input('harga_pokok_jasa')),
+            'laba_kotor' => str_replace('.', '', $request->input('laba_kotor')),
+            'biaya_gaji' => str_replace('.', '', $request->input('biaya_gaji')),
+            'beban_meeting' => str_replace('.', '', $request->input('beban_meeting')),
+            'beban_lain_lain' => str_replace('.', '', $request->input('beban_lain_lain')),
+            'jumlah_beban_operasi' => str_replace('.', '', $request->input('jumlah_beban_operasi')),
+            'laba_bersih_operasional' => str_replace('.', '', $request->input('laba_bersih_operasional')),
+            'laba_bersih' => str_replace('.', '', $request->input('laba_bersih')),
+        ]);
 
-        $request->validate([
-            'tanggal' => 'required|date',
-            'jenis' => 'required|in:pendapatan,beban',
-            'keterangan' => 'nullable|string|max:255',
-            'jumlah' => 'required|numeric|min:0',
+        $validated = $request->validate([
+            'tanggal'               => 'required|date',
+            'jenis'                 => 'required|in:pendapatan,beban',
+            'keterangan'            => 'nullable|string|max:255',
+            'harga_pokok_jasa'      => 'required|numeric|min:0',
+            'laba_kotor'            => 'required|numeric|min:0',
+            'biaya_gaji'            => 'required|numeric|min:0',
+            'beban_meeting'         => 'required|numeric|min:0',
+            'beban_lain_lain'       => 'required|numeric|min:0',
+            'jumlah_beban_operasi'  => 'required|numeric|min:0',
+            'laba_bersih_operasional' => 'required|numeric|min:0',
+            'laba_bersih'           => 'required|numeric|min:0',
+            'jumlah'                => 'required|numeric|min:0',
         ]);
 
         try {
             $labaRugi = LabaRugi::findOrFail($id);
-            $labaRugi->update($request->all());
+            $labaRugi->update($validated); // Update with validated data
             return redirect()->route('laba-rugi.index')->with('success', 'Data Laba Rugi berhasil diperbarui.');
         } catch (\Exception $e) {
             Log::error('Gagal update Laba Rugi: ' . $e->getMessage());
             return back()->with('failed', 'Terjadi kesalahan.')->withInput();
         }
     }
+
 
     public function destroy($id)
     {

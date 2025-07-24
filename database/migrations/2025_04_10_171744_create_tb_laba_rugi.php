@@ -16,10 +16,19 @@ return new class extends Migration
             $table->date('tanggal');
             $table->enum('jenis', ['pendapatan', 'beban']);
             $table->string('keterangan')->nullable();
+            $table->decimal('harga_pokok_jasa', 15, 2);
+            $table->decimal('laba_kotor', 15, 2);
+            $table->decimal('biaya_gaji', 15, 2);
+            $table->decimal('beban_meeting', 15, 2);
+            $table->decimal('beban_lain_lain', 15, 2);
+            $table->decimal('jumlah_beban_operasi', 15, 2);
+            $table->decimal('laba_bersih_operasional', 15, 2);
+            $table->decimal('laba_bersih', 15, 2);
             $table->decimal('jumlah', 15, 2);
             $table->boolean('is_deleted')->default(false);
             $table->timestamps();
         });
+
     }
 
     /**
