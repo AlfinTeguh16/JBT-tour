@@ -77,11 +77,11 @@ class DraftPekerjaanController extends Controller
             // Buat transaksi otomatis terkait draft tersebut
             TransaksiDraftPekerjaan::create([
                 'draft_pekerjaan_id' => $draft->id,
-                'nilai_pekerjaan' => rand(100000000, 500000000),
-                'nilai_dpp' => rand(80000000, 490000000),
-                'nilai_ppn' => rand(5000000, 10000000),
-                'nilai_pph_final' => rand(2000000, 8000000),
-                'nilai_bersih_pekerjaan' => rand(85000000, 495000000),
+                'nilai_pekerjaan' => 0,
+                'nilai_dpp' => 0,
+                'nilai_ppn' => 0,
+                'nilai_pph_final' => 0,
+                'nilai_bersih_pekerjaan' => 0,
             ]);
 
             Log::debug('Redirecting to index');

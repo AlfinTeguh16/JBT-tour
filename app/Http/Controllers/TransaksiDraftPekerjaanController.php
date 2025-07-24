@@ -95,6 +95,7 @@ class TransaksiDraftPekerjaanController extends Controller
                     'nilai_pph_final' => 'required|numeric|min:0',
                     'nilai_bersih_pekerjaan' => 'required|numeric|min:0',
                 ]);
+                // dd($request->all());
 
                 $transaksi->update($request->all());
 
