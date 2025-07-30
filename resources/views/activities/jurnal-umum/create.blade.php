@@ -19,7 +19,7 @@
     </x-form>
 
 
-    <div class="grid md:grid-cols-2 gap-4 mb-6">
+    <div class="grid md:grid-cols-2 gap-4 my-4">
       <x-form name="tanggal" label="Tanggal" type="date" value="{{ old('tanggal') }}" required="true" />
       <x-form name="jumlah" label="Jumlah" type="text" class="only-number thousand-separator" placeholder="Contoh: 1500000" required="true" />
     </div>
