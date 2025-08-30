@@ -27,7 +27,7 @@ class OrderController extends Controller
                     ->latest('requested_at')->paginate(15);
             }
 
-            return view('orders.index', compact('orders'));
+            return view('activities.orders.index', compact('orders'));
         } catch (\Throwable $e) {
             Log::error('Orders index error', ['error' => $e->getMessage()]);
             return back()->with('error', 'Gagal memuat data order.');
@@ -46,7 +46,7 @@ class OrderController extends Controller
                 })
                 ->latest('requested_at')->paginate(15)->withQueryString();
 
-            return view('orders.index', compact('orders', 'q'));
+            return view('activities.orders.index', compact('orders', 'q'));
         } catch (\Throwable $e) {
             Log::error('Orders search error', ['q' => $request->q, 'error' => $e->getMessage()]);
             return back()->with('error', 'Gagal melakukan pencarian.');
@@ -57,7 +57,7 @@ class OrderController extends Controller
     {
         try {
             $customers = Customer::orderBy('name')->get();
-            return view('orders.create', compact('customers'));
+            return view('activities.orders.create', compact('customers'));
         } catch (\Throwable $e) {
             Log::error('Orders create error', ['error' => $e->getMessage()]);
             return back()->with('error', 'Gagal memuat form pembuatan order.');
@@ -92,7 +92,7 @@ class OrderController extends Controller
     {
         try {
             $order->load(['customer','assignment.driver','assignment.guide','assignment.vehicle']);
-            return view('orders.show', compact('order'));
+            return view('activities.orders.show', compact('order'));
         } catch (\Throwable $e) {
             Log::error('Order show error', ['order_id' => $order->id, 'error' => $e->getMessage()]);
             return back()->with('error', 'Gagal memuat detail order.');
@@ -103,7 +103,7 @@ class OrderController extends Controller
     {
         try {
             $customers = Customer::orderBy('name')->get();
-            return view('orders.edit', compact('order','customers'));
+            return view('activities.orders.edit', compact('order','customers'));
         } catch (\Throwable $e) {
             Log::error('Order edit error', ['order_id' => $order->id, 'error' => $e->getMessage()]);
             return back()->with('error', 'Gagal memuat form edit.');
