@@ -29,7 +29,7 @@ class CustomerController extends Controller
                        ->orWhere('email', 'like', "%{$q}%")
                 )->paginate(15)->withQueryString();
 
-            return view('customers.index', compact('customers', 'q'));
+            return view('activities.customers.index', compact('customers', 'q'));
         } catch (\Throwable $e) {
             Log::error('Customers search error', ['q' => $request->q, 'error' => $e->getMessage()]);
             return back()->with('error', 'Gagal melakukan pencarian.');
