@@ -2,11 +2,21 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
-    <title>@yield('title') | CV. Cipta Arya</title>
+    <title>@yield('title') | PT. JBT INDONESIA</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" href="{{ asset('assets/img/favicon.svg') }}">
     @vite('resources/css/app.css')
+    {{-- <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css"
+    /> --}}
 </head>
 <body class="min-h-screen bg-gray-50 flex">
 

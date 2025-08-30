@@ -3,15 +3,12 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\KaryawanController;
-use App\Http\Controllers\DraftPekerjaanController;
-use App\Http\Controllers\TransaksiDraftPekerjaanController;
-use App\Http\Controllers\NeracaController;
-use App\Http\Controllers\LaporanKeuanganController;
-use App\Http\Controllers\ArusKasController;
-use App\Http\Controllers\LabaRugiController;
-use App\Http\Controllers\JurnalUmumController;
-use App\Http\Controllers\PerubahanModalController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\VehicleController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\AssignmentController;
+use App\Http\Controllers\WorkSessionController;
+use App\Http\Controllers\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,191 +26,122 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('auth.logout');
 
-// Dashboard
+// Dashboard redirect sesuai role
 Route::middleware('auth')->get('/dashboard', function () {
     return match(auth()->user()->role) {
-        'direktur' => redirect()->route('dashboard.direktur'),
-        'admin'    => redirect()->route('dashboard.admin'),
-        'akuntan'  => redirect()->route('dashboard.akuntan'),
-        'pengawas' => redirect()->route('dashboard.pengawas'),
-        default    => abort(403),
+        'admin'  => redirect()->route('dashboard.admin'),
+        'staff'  => redirect()->route('dashboard.staff'),
+        'driver' => redirect()->route('dashboard.driver'),
+        'guide'  => redirect()->route('dashboard.guide'),
+        default  => abort(403),
     };
 })->name('dashboard');
 
-Route::middleware(['auth', 'role:direktur'])->get('/dashboard/direktur', [DashboardController::class, 'direktur'])->name('dashboard.direktur');
+// Dashboard tiap role
 Route::middleware(['auth', 'role:admin'])->get('/dashboard/admin', [DashboardController::class, 'admin'])->name('dashboard.admin');
-Route::middleware(['auth', 'role:akuntan'])->get('/dashboard/akuntan', [DashboardController::class, 'akuntan'])->name('dashboard.akuntan');
-Route::middleware(['auth', 'role:pengawas'])->get('/dashboard/pengawas', [DashboardController::class, 'pengawas'])->name('dashboard.pengawas');
+Route::middleware(['auth', 'role:staff'])->get('/dashboard/staff', [DashboardController::class, 'staff'])->name('dashboard.staff');
+Route::middleware(['auth', 'role:driver'])->get('/dashboard/driver', [DashboardController::class, 'driver'])->name('dashboard.driver');
+Route::middleware(['auth', 'role:guide'])->get('/dashboard/guide', [DashboardController::class, 'guide'])->name('dashboard.guide');
 
-Route::middleware(['auth', 'role:direktur|admin|akuntan|pengawas'])
-    ->get('/dashboard/index', [DashboardController::class, 'index'])
-    ->name('dashboard.index');
-
-// ========================== Fitur: Draft Pekerjaan ==========================
-Route::prefix('draft-pekerjaan')->name('draft-pekerjaan.')->middleware('auth')->group(function () {
-    Route::middleware('role:akuntan|pengawas|admin')->group(function () {
-        Route::get('create', [DraftPekerjaanController::class, 'create'])->name('create');
-        Route::post('/', [DraftPekerjaanController::class, 'store'])->name('store');
-        Route::get('{draft_pekerjaan}/edit', [DraftPekerjaanController::class, 'edit'])->name('edit');
-        Route::put('{draft_pekerjaan}', [DraftPekerjaanController::class, 'update'])->name('update');
-        Route::post('{draft_pekerjaan}', [DraftPekerjaanController::class, 'destroy'])->name('destroy');
-        Route::post('update-checkbox/{draft_pekerjaan}', [DraftPekerjaanController::class, 'updateCheckbox'])->name('update-checkbox');
+// ====================================================================
+// Customers
+// ====================================================================
+Route::prefix('customers')->name('customers.')->middleware('auth')->group(function () {
+    Route::middleware('role:admin|staff')->group(function () {
+        Route::get('create', [CustomerController::class, 'create'])->name('create');
+        Route::post('/', [CustomerController::class, 'store'])->name('store');
+        Route::get('{customer}/edit', [CustomerController::class, 'edit'])->name('edit');
+        Route::put('{customer}', [CustomerController::class, 'update'])->name('update');
+        Route::delete('{customer}', [CustomerController::class, 'destroy'])->name('destroy');
     });
 
-    Route::middleware('role:direktur|admin|akuntan|pengawas')->group(function () {
-        Route::get('/', [DraftPekerjaanController::class, 'index'])->name('index');
-        Route::get('search', [DraftPekerjaanController::class, 'search'])->name('search');
-        Route::get('{draft_pekerjaan}', [DraftPekerjaanController::class, 'show'])->name('show');
+    Route::middleware('role:admin|staff')->group(function () {
+        Route::get('/', [CustomerController::class, 'index'])->name('index');
+        Route::get('search', [CustomerController::class, 'search'])->name('search');
+        Route::get('{customer}', [CustomerController::class, 'show'])->name('show');
     });
 });
 
-// ========================== Fitur: Karyawan ==========================
-Route::prefix('karyawan')->name('karyawan.')->middleware('auth')->group(function () {
-    Route::middleware('role:akuntan')->group(function () {
-        Route::get('create', [KaryawanController::class, 'create'])->name('create');
-        Route::post('/', [KaryawanController::class, 'store'])->name('store');
-        Route::get('{karyawan}/edit', [KaryawanController::class, 'edit'])->name('edit');
-        Route::put('{karyawan}', [KaryawanController::class, 'update'])->name('update');
-        Route::post('{karyawan}', [KaryawanController::class, 'destroy'])->name('destroy');
+// ====================================================================
+// Vehicles
+// ====================================================================
+Route::prefix('vehicles')->name('vehicles.')->middleware('auth')->group(function () {
+    Route::middleware('role:admin|staff')->group(function () {
+        Route::get('create', [VehicleController::class, 'create'])->name('create');
+        Route::post('/', [VehicleController::class, 'store'])->name('store');
+        Route::get('{vehicle}/edit', [VehicleController::class, 'edit'])->name('edit');
+        Route::put('{vehicle}', [VehicleController::class, 'update'])->name('update');
+        Route::delete('{vehicle}', [VehicleController::class, 'destroy'])->name('destroy');
     });
 
-    Route::middleware('role:direktur|admin|akuntan|pengawas')->group(function () {
-        Route::get('/', [KaryawanController::class, 'index'])->name('index');
-        Route::get('search', [KaryawanController::class, 'search'])->name('search');
-        Route::get('{karyawan}', [KaryawanController::class, 'show'])->name('show');
-    });
-});
-
-
-// ========================== Fitur: Transaksi Draft Pekerjaan ==========================
-Route::prefix('transaksi-draft-pekerjaan')->name('transaksi-draft-pekerjaan.')->middleware('auth')->group(function () {
-    Route::middleware('role:akuntan|admin')->group(function () {
-        Route::get('create', [TransaksiDraftPekerjaanController::class, 'create'])->name('create');
-        Route::post('store', [TransaksiDraftPekerjaanController::class, 'store'])->name('store');
-        Route::get('{transaksi_draft_pekerjaan}/edit', [TransaksiDraftPekerjaanController::class, 'edit'])->name('edit');
-        Route::put('{transaksi_draft_pekerjaan}', [TransaksiDraftPekerjaanController::class, 'update'])->name('update');
-        Route::post('{transaksi_draft_pekerjaan}', [TransaksiDraftPekerjaanController::class, 'destroy'])->name('destroy');
-    });
-
-    Route::middleware('role:direktur|admin|akuntan|pengawas')->group(function () {
-        Route::get('/', [TransaksiDraftPekerjaanController::class, 'index'])->name('index');
-        Route::get('search', [TransaksiDraftPekerjaanController::class, 'search'])->name('search');
-        Route::get('{transaksi_draft_pekerjaan}', [TransaksiDraftPekerjaanController::class, 'show'])->name('show');
+    Route::middleware('role:admin|staff|driver|guide')->group(function () {
+        Route::get('/', [VehicleController::class, 'index'])->name('index');
+        Route::get('{vehicle}', [VehicleController::class, 'show'])->name('show');
     });
 });
 
-// ========================== Fitur: Neraca ==========================
-Route::prefix('data-neraca')->name('data-neraca.')->middleware('auth')->group(function () {
-    Route::middleware('role:akuntan')->group(function () {
-        Route::get('create', [NeracaController::class, 'create'])->name('create');
-        Route::post('/', [NeracaController::class, 'store'])->name('store');
-        Route::get('{id}/edit', [NeracaController::class, 'edit'])->name('edit');
-        Route::put('{id}', [NeracaController::class, 'update'])->name('update');
-        Route::post('{id}', [NeracaController::class, 'destroy'])->name('destroy');
-        Route::post('update-checkbox/{id}', [NeracaController::class, 'updateCheckbox'])->name('update-checkbox');
+// ====================================================================
+// Orders
+// ====================================================================
+Route::prefix('orders')->name('orders.')->middleware('auth')->group(function () {
+    Route::middleware('role:staff')->group(function () {
+        Route::get('create', [OrderController::class, 'create'])->name('create');
+        Route::post('/', [OrderController::class, 'store'])->name('store');
+        Route::get('{order}/edit', [OrderController::class, 'edit'])->name('edit');
+        Route::put('{order}', [OrderController::class, 'update'])->name('update');
+        Route::delete('{order}', [OrderController::class, 'destroy'])->name('destroy');
     });
 
-    Route::middleware('role:direktur|admin|akuntan|pengawas')->group(function () {
-        Route::get('/', [NeracaController::class, 'index'])->name('index');
-        Route::get('search', [NeracaController::class, 'search'])->name('search');
-        Route::get('{id}', [NeracaController::class, 'show'])->name('show');
-    });
-});
-
-// ========================== Fitur: Laporan Keuangan ==========================
-Route::prefix('laporan-keuangan')->name('laporan-keuangan.')->middleware('auth')->group(function () {
-    Route::middleware('role:akuntan')->group(function () {
-        Route::get('create', [LaporanKeuanganController::class, 'create'])->name('create');
-        Route::post('/', [LaporanKeuanganController::class, 'store'])->name('store');
-        Route::get('{id}/edit', [LaporanKeuanganController::class, 'edit'])->name('edit');
-        Route::put('{id}', [LaporanKeuanganController::class, 'update'])->name('update');
-        Route::post('{id}', [LaporanKeuanganController::class, 'destroy'])->name('destroy');
-
-    });
-
-    Route::middleware('role:direktur')->put('{id}/status', [LaporanKeuanganController::class, 'updateStatus'])->name('update-status');
-
-    Route::middleware('role:direktur|admin|akuntan|pengawas')->group(function () {
-        Route::get('/', [LaporanKeuanganController::class, 'index'])->name('index');
-        Route::get('search', [LaporanKeuanganController::class, 'search'])->name('search');
-        Route::get('/{id}', [LaporanKeuanganController::class, 'show'])->name('show');
-        Route::get('/{id}/export/pdf', [LaporanKeuanganController::class, 'exportPdf'])->name('export.pdf');
-        Route::get('/{id}/export/excel', [LaporanKeuanganController::class, 'exportExcel'])->name('export.excel');
+    Route::middleware('role:admin|staff|driver|guide')->group(function () {
+        Route::get('/', [OrderController::class, 'index'])->name('index');
+        Route::get('search', [OrderController::class, 'search'])->name('search');
+        Route::get('{order}', [OrderController::class, 'show'])->name('show');
     });
 });
 
-// ========================== Fitur: Arus Kas ==========================
-Route::prefix('arus-kas')->name('arus-kas.')->middleware('auth')->group(function () {
-
-    // 👨‍💼 Role: Akuntan - CRUD
-    Route::middleware('role:akuntan')->group(function () {
-        Route::get('create', [ArusKasController::class, 'create'])->name('create');
-        Route::post('/', [ArusKasController::class, 'store'])->name('store');
-        Route::get('{id}/edit', [ArusKasController::class, 'edit'])->name('edit');
-        Route::put('{id}', [ArusKasController::class, 'update'])->name('update');
-        Route::post('{id}', [ArusKasController::class, 'destroy'])->name('destroy');
+// ====================================================================
+// Assignments
+// ====================================================================
+Route::prefix('assignments')->name('assignments.')->middleware('auth')->group(function () {
+    Route::middleware('role:staff')->group(function () {
+        Route::get('create', [AssignmentController::class, 'create'])->name('create');
+        Route::post('/', [AssignmentController::class, 'store'])->name('store');
+        Route::get('{assignment}/edit', [AssignmentController::class, 'edit'])->name('edit');
+        Route::put('{assignment}', [AssignmentController::class, 'update'])->name('update');
+        Route::delete('{assignment}', [AssignmentController::class, 'destroy'])->name('destroy');
     });
 
-    // 📊 Role: Semua (yang diizinkan) - View & Search
-    Route::middleware('role:akuntan')->group(function () {
-        Route::get('/', [ArusKasController::class, 'index'])->name('index');
-        Route::get('search', [ArusKasController::class, 'search'])->name('search');
-        Route::get('{id}', [ArusKasController::class, 'show'])->name('show');
+    Route::middleware('role:admin|staff|driver|guide')->group(function () {
+        Route::get('/', [AssignmentController::class, 'index'])->name('index');
+        Route::get('{assignment}', [AssignmentController::class, 'show'])->name('show');
     });
 });
 
-// ========================== Fitur: Laba Rugi ==========================
-Route::prefix('laba-rugi')->name('laba-rugi.')->middleware('auth')->group(function () {
-    Route::middleware('role:akuntan')->group(function () {
-        Route::get('create', [LabaRugiController::class, 'create'])->name('create');
-        Route::post('/', [LabaRugiController::class, 'store'])->name('store');
-        Route::get('{id}/edit', [LabaRugiController::class, 'edit'])->name('edit');
-        Route::put('{id}', [LabaRugiController::class, 'update'])->name('update');
-        Route::post('{id}', [LabaRugiController::class, 'destroy'])->name('destroy');
+// ====================================================================
+// Work Sessions (jam kerja driver/guide)
+// ====================================================================
+Route::prefix('work-sessions')->name('work-sessions.')->middleware('auth')->group(function () {
+    Route::middleware('role:driver|guide')->group(function () {
+        Route::get('create', [WorkSessionController::class, 'create'])->name('create');
+        Route::post('/', [WorkSessionController::class, 'store'])->name('store');
+        Route::get('{work_session}/edit', [WorkSessionController::class, 'edit'])->name('edit');
+        Route::put('{work_session}', [WorkSessionController::class, 'update'])->name('update');
+        Route::delete('{work_session}', [WorkSessionController::class, 'destroy'])->name('destroy');
     });
 
-    Route::middleware('role:direktur|admin|akuntan|pengawas')->group(function () {
-        Route::get('/', [LabaRugiController::class, 'index'])->name('index');
-        Route::get('search', [LabaRugiController::class, 'search'])->name('search');
-        Route::get('{id}', [LabaRugiController::class, 'show'])->name('show');
-    });
-});
-
-// ========================== Fitur: Jurnal Umum ==========================
-Route::prefix('jurnal-umum')->name('jurnal-umum.')->middleware('auth')->group(function () {
-    // CRUD - hanya untuk Akuntan
-    Route::middleware('role:akuntan')->group(function () {
-        Route::get('create', [JurnalUmumController::class, 'create'])->name('create');
-        Route::post('/', [JurnalUmumController::class, 'store'])->name('store');
-        Route::get('{id}/edit', [JurnalUmumController::class, 'edit'])->name('edit');
-        Route::put('{id}', [JurnalUmumController::class, 'update'])->name('update');
-        Route::post('{id}', [JurnalUmumController::class, 'destroy'])->name('destroy');
-    });
-
-    // Akses umum semua role: lihat dan cari
-    Route::middleware('role:direktur|admin|akuntan|pengawas')->group(function () {
-        Route::get('/', [JurnalUmumController::class, 'index'])->name('index');
-        Route::get('search', [JurnalUmumController::class, 'search'])->name('search');
-        Route::get('{id}', [JurnalUmumController::class, 'show'])->name('show');
+    Route::middleware('role:admin|staff|driver|guide')->group(function () {
+        Route::get('/', [WorkSessionController::class, 'index'])->name('index');
+        Route::get('{work_session}', [WorkSessionController::class, 'show'])->name('show');
     });
 });
 
-// ========================== Fitur: Perubahan Modal ==========================
-Route::prefix('perubahan-modal')->name('perubahan-modal.')->middleware('auth')->group(function () {
-    // CRUD - hanya untuk Akuntan
-    Route::middleware('role:akuntan')->group(function () {
-        Route::get('create', [PerubahanModalController::class, 'create'])->name('create');
-        Route::post('/', [PerubahanModalController::class, 'store'])->name('store');
-        Route::get('{id}/edit', [PerubahanModalController::class, 'edit'])->name('edit');
-        Route::put('{id}', [PerubahanModalController::class, 'update'])->name('update');
-        Route::post('{id}', [PerubahanModalController::class, 'destroy'])->name('destroy');
-    });
-
-    // Akses umum semua role: lihat dan cari
-    Route::middleware('role:direktur|admin|akuntan|pengawas')->group(function () {
-        Route::get('/', [PerubahanModalController::class, 'index'])->name('index');
-        Route::get('search', [PerubahanModalController::class, 'search'])->name('search');
-        Route::get('{id}', [PerubahanModalController::class, 'show'])->name('show');
+// ====================================================================
+// Notifications
+// ====================================================================
+Route::prefix('notifications')->name('notifications.')->middleware('auth')->group(function () {
+    Route::middleware('role:admin|staff|driver|guide')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::get('{notification}', [NotificationController::class, 'show'])->name('show');
+        Route::post('{notification}/read', [NotificationController::class, 'markAsRead'])->name('markAsRead');
     });
 });
-

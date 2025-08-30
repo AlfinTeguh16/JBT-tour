@@ -3,7 +3,7 @@
 @php
 $classes = [
     'flex items-center px-4 py-2 rounded-lg transition',
-    $active ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
+    $active ? 'bg-gray-100 text-gray-600 font-semibold' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-600'
 ];
 @endphp
 

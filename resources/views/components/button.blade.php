@@ -5,15 +5,30 @@
 
 @php
     $base = 'inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
+
     $variants = [
-        'primary'   => 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-300',
-        'secondary' => 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-300',
-        'neutral'   => 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-200',
-        'delete'    => 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-300',
-        'edit'      => 'bg-yellow-500 text-white hover:bg-yellow-600 focus:ring-yellow-300',
-        'disabled'  => 'bg-gray-400 text-gray-700 cursor-not-allowed opacity-50',
-        'back'      => 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-200',
+        // Primary merah
+        'primary'   => 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-400',
+
+        // Secondary pakai biru tua gelap
+        'secondary' => 'bg-blue-800 text-white hover:bg-blue-900 focus:ring-blue-600',
+
+        // Neutral pakai abu-abu gelap
+        'neutral'   => 'bg-gray-700 text-white hover:bg-gray-800 focus:ring-gray-500',
+
+        // Delete tetap merah tapi lebih tegas
+        'delete'    => 'bg-red-700 text-white hover:bg-red-800 focus:ring-red-500',
+
+        // Edit → pakai slate (abu kebiruan gelap) biar tidak cerah
+        'edit'      => 'bg-slate-600 text-white hover:bg-slate-700 focus:ring-slate-500',
+
+        // Disabled abu-abu kusam
+        'disabled'  => 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50',
+
+        // Back → abu-abu netral
+        'back'      => 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
     ];
+
     $classes = $base.' '.$variants[$variant];
 @endphp
 

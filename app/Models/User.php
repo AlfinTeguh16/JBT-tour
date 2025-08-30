@@ -17,12 +17,12 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+
     protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'role',
+        'name', 'email', 'password', 'phone', 'role', 'is_active'
     ];
+
+
 
     public function hasRole($role)
     {
@@ -50,5 +50,31 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // Relasi
+    public function assignmentsAsStaff()
+    {
+        return $this->hasMany(Assignment::class, 'staff_id');
+    }
+
+    public function assignmentsAsDriver()
+    {
+        return $this->hasMany(Assignment::class, 'driver_id');
+    }
+
+    public function assignmentsAsGuide()
+    {
+        return $this->hasMany(Assignment::class, 'guide_id');
+    }
+
+    public function workSessions()
+    {
+        return $this->hasMany(WorkSession::class);
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
     }
 }
