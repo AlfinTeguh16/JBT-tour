@@ -17,28 +17,31 @@
         <div class="w-full flex justify-center">
           <h1 class="font-bold text-3xl">Login</h1>
         </div>
-        <form action="{{ route('auth.login.post') }}" method="POST" class="space-y-6">
+        <form action="{{ route('auth.login.post') }}" method="POST" class="space-y-6 flex flex-col">
             @csrf
 
-            <x-form
+            <input
                 type="text"
                 name="name"
                 label="Name"
                 placeholder="Jhon Doe"
-                :value="old('name')"
-                required />
+                required
+                autofocus
+                class="w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
 
-            <x-form
+            <input
                 type="password"
                 name="password"
                 label="Password"
                 placeholder="••••••••"
-                required />
+                required
+                autofocus
+                class="w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
 
             <x-button variant="primary" class="w-full">
                 Login
             </x-button>
-        </form>
+        </input>
     </x-card>
 </div>
 
