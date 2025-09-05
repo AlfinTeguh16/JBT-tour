@@ -19,12 +19,19 @@
       <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard*')">
         <ph-icon name="house" class="mr-2" /> Dashboard
       </x-nav-link>
+      <x-nav-link href="{{ route('profile') }}" :active="request()->routeIs('profile.*')">
+        <ph-icon name="house" class="mr-2" /> Profile
+      </x-nav-link>
 
       @auth
         @php($role = Auth::user()->role)
 
         {{-- ===== ADMIN ===== --}}
         @if($role === 'admin')
+          <x-nav-link href="{{ route('users.index') }}" :active="request()->routeIs('users.*')">
+            <ph-icon name="users-three" class="mr-2" /> Users
+          </x-nav-link>
+
           <x-nav-link href="{{ route('customers.index') }}" :active="request()->routeIs('customers.*')">
             <ph-icon name="users-three" class="mr-2" /> Customers
           </x-nav-link>

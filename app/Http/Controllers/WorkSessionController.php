@@ -229,16 +229,18 @@ class WorkSessionController extends Controller
         try {
             $user = Auth::user();
 
+            // Pastikan hanya driver atau guide yang dapat memulai sesi
             if (!in_array($user->id, [$assignment->driver_id, $assignment->guide_id])) {
                 abort(403, 'Anda tidak berhak memulai sesi ini.');
             }
 
+            // Cari work session yang sudah ada atau buat yang baru
             $ws = WorkSession::where('assignment_id', $assignment->id)
                 ->where('user_id', $user->id)
                 ->first();
 
             if (!$ws) {
-
+                // Jika tidak ada work session sebelumnya, buat work session baru
                 $ws = WorkSession::create([
                     'user_id'       => $user->id,
                     'assignment_id' => $assignment->id,
@@ -246,12 +248,13 @@ class WorkSessionController extends Controller
                     'hours_decimal' => 0,
                 ]);
             } else {
-
+                // Jika ada work session sebelumnya, mulai ulang dengan timestamp baru
                 $ws->started_at = Carbon::now();
                 $ws->ended_at   = null;
                 $ws->save();
             }
 
+            // Update status assignment dan order menjadi 'in_progress'
             $assignment->update(['status' => 'in_progress']);
             $assignment->order->update(['status' => 'in_progress']);
 
@@ -262,7 +265,6 @@ class WorkSessionController extends Controller
             ]);
 
             return back()->with('success', 'Sesi kerja dimulai.');
-
         } catch (\Throwable $e) {
             Log::error('Work session start error', [
                 'assignment_id' => $assignment->id ?? null,
@@ -272,30 +274,30 @@ class WorkSessionController extends Controller
         }
     }
 
-    /**
-     * Stop work session (akumulasi jam)
-     */
     public function stop(Request $request, WorkSession $workSession)
     {
         try {
             $user = Auth::user();
 
+            // Pastikan user yang memulai sesi yang bisa menghentikannya
             if ($workSession->user_id !== $user->id) {
                 abort(403,'Anda tidak berhak menghentikan sesi ini.');
             }
 
+            // Cek jika sesi sudah dihentikan sebelumnya
             if ($workSession->ended_at) {
                 return back()->with('error', 'Sesi kerja sudah dihentikan.');
             }
 
+            // Set waktu selesai dan hitung jam kerja
             $workSession->ended_at = Carbon::now();
-            $diffHours = $workSession->ended_at->floatDiffInHours($workSession->started_at);
+            $diffHours = $workSession->ended_at->diffInMinutes($workSession->started_at) / 60;
 
-            // akumulasi jam (tidak overwrite)
+            // Akumulasi jam (tidak menimpa nilai sebelumnya)
             $workSession->hours_decimal = ($workSession->hours_decimal ?? 0) + $diffHours;
             $workSession->save();
 
-            // Update status assignment & order jadi 'completed'
+            // Update status assignment dan order menjadi 'completed'
             $workSession->assignment->update(['status' => 'completed']);
             $workSession->assignment->order->update(['status' => 'completed']);
 
@@ -307,7 +309,6 @@ class WorkSessionController extends Controller
             ]);
 
             return back()->with('success', 'Sesi kerja dihentikan.');
-
         } catch (\Throwable $e) {
             Log::error('Work session stop error', [
                 'work_session_id' => $workSession->id ?? null,
@@ -316,5 +317,6 @@ class WorkSessionController extends Controller
             return back()->with('error', 'Gagal menghentikan sesi kerja.');
         }
     }
+
 
 }

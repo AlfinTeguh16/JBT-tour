@@ -1,10 +1,13 @@
 @extends('layouts.master')
-@section('title','Edit Customer')
+@section('title','Edit Kendaraan')
 
 @section('content')
-<h1 class="text-2xl font-bold mb-6">Edit Customer</h1>
-<form action="{{ route('customers.update',$customer) }}" method="post" class="bg-white p-5 rounded border">
-  @method('PUT')
-  @include('activities.customers._form')
-</form>
+<h1 class="text-2xl font-bold mb-6">Edit Kendaraan</h1>
+<form action="{{ route('vehicles.update',$vehicle) }}" method="post">
+    @csrf
+    @include('activities.vehicles._form', [
+      'action' => route('vehicles.update',$vehicle),
+      'method' => 'PUT',
+    ])
+  </form>
 @endsection

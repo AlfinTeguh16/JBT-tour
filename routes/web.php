@@ -9,6 +9,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\WorkSessionController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,6 +45,29 @@ Route::middleware(['auth', 'role:admin'])->get('/dashboard/admin', [DashboardCon
 Route::middleware(['auth', 'role:staff'])->get('/dashboard/staff', [DashboardController::class, 'staff'])->name('dashboard.staff');
 Route::middleware(['auth', 'role:driver'])->get('/dashboard/driver', [DashboardController::class, 'driver'])->name('dashboard.driver');
 Route::middleware(['auth', 'role:guide'])->get('/dashboard/guide', [DashboardController::class, 'guide'])->name('dashboard.guide');
+
+
+// ====================================================================
+// Users
+// ====================================================================
+Route::middleware('auth')->group(function () {
+
+    Route::get('/profile', [UserController::class, 'showProfile'])->name('profile');
+    Route::post('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
+
+
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/users', [UserController::class, 'index'])->name('users.index');
+        Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+
+        Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+
+        Route::post('/users', [UserController::class, 'store'])->name('users.store');
+        Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+    });
+});
+
+
 
 // ====================================================================
 // Customers
@@ -129,15 +153,10 @@ Route::prefix('work-sessions')->name('work-sessions.')->middleware('auth')->grou
         Route::get('{work_session}/edit', [WorkSessionController::class, 'edit'])->name('edit');
         Route::put('{work_session}', [WorkSessionController::class, 'update'])->name('update');
         Route::delete('{work_session}', [WorkSessionController::class, 'destroy'])->name('destroy');
-        // Start work session (driver/guide klik "Start")
-        Route::post('/assignments/{assignment}/work-sessions/start', [WorkSessionController::class, 'start'])
-            ->name('start');
 
-        // Stop work session (driver/guide klik "Stop")
-        Route::post('/work-sessions/{workSession}/stop', [WorkSessionController::class, 'stop'])
-            ->name('stop');
-        });
-
+        Route::post('/work-sessions/{assignment}/start', [WorkSessionController::class, 'start'])->name('start');
+        Route::post('/work-sessions/{workSession}/stop', [WorkSessionController::class, 'stop'])->name('stop');
+    });
     Route::middleware('role:admin|staff|driver|guide')->group(function () {
         Route::get('/', [WorkSessionController::class, 'index'])->name('index');
         Route::get('{work_session}', [WorkSessionController::class, 'show'])->name('show');
