@@ -28,7 +28,7 @@ class WorkSessionController extends Controller
                     ->paginate(15);
             }
 
-            return view('work-sessions.index', compact('workSessions'));
+            return view('activities.work-sessions.index', compact('workSessions'));
         } catch (\Throwable $e) {
             Log::error('WorkSessions index error', ['error' => $e->getMessage()]);
             return back()->with('error', 'Gagal memuat jam kerja.');
@@ -48,7 +48,7 @@ class WorkSessionController extends Controller
                 ->orderBy('scheduled_start')
                 ->get();
 
-            return view('work-sessions.create', compact('assignments'));
+            return view('activities.work-sessions.create', compact('assignments'));
         } catch (\Throwable $e) {
             Log::error('WorkSessions create error', ['error' => $e->getMessage()]);
             return back()->with('error', 'Gagal memuat form jam kerja.');
@@ -71,7 +71,7 @@ class WorkSessionController extends Controller
                 'hours_decimal' => ['nullable','numeric','min:0'],
             ]);
 
-            // Pastikan assignment (jika ada) milik user
+
             if (!empty($data['assignment_id'])) {
                 $ownField = $user->role === 'driver' ? 'driver_id' : 'guide_id';
                 $belongs = Assignment::where('id', $data['assignment_id'])
@@ -84,7 +84,7 @@ class WorkSessionController extends Controller
                 }
             }
 
-            // Hitung hours_decimal jika tidak diisi namun ended_at ada
+
             if (empty($data['hours_decimal']) && !empty($data['ended_at'])) {
                 $start = Carbon::parse($data['started_at']);
                 $end   = Carbon::parse($data['ended_at']);
@@ -110,18 +110,30 @@ class WorkSessionController extends Controller
     {
         try {
             $user = Auth::user();
+
+
             if (in_array($user->role, ['driver','guide']) && $workSession->user_id !== $user->id) {
-                Log::warning('WorkSession show forbidden', ['viewer_id' => $user->id, 'work_session_id' => $workSession->id]);
+                Log::warning('WorkSession show forbidden', [
+                    'viewer_id' => $user->id,
+                    'work_session_id' => $workSession->id
+                ]);
                 abort(403);
             }
 
+
             $workSession->load(['assignment.order.customer','user']);
-            return view('work-sessions.show', compact('workSession'));
+
+            return view('activities.work-sessions.show', compact('workSession'));
+
         } catch (\Throwable $e) {
-            Log::error('WorkSession show error', ['work_session_id' => $workSession->id, 'error' => $e->getMessage()]);
+            Log::error('WorkSession show error', [
+                'work_session_id' => $workSession->id ?? null,
+                'error' => $e->getMessage(),
+            ]);
             return back()->with('error', 'Gagal memuat detail jam kerja.');
         }
     }
+
 
     public function edit(WorkSession $workSession)
     {
@@ -211,4 +223,98 @@ class WorkSessionController extends Controller
             return back()->with('error', 'Gagal menghapus jam kerja.');
         }
     }
+
+    public function start(Request $request, Assignment $assignment)
+    {
+        try {
+            $user = Auth::user();
+
+            if (!in_array($user->id, [$assignment->driver_id, $assignment->guide_id])) {
+                abort(403, 'Anda tidak berhak memulai sesi ini.');
+            }
+
+            $ws = WorkSession::where('assignment_id', $assignment->id)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if (!$ws) {
+
+                $ws = WorkSession::create([
+                    'user_id'       => $user->id,
+                    'assignment_id' => $assignment->id,
+                    'started_at'    => Carbon::now(),
+                    'hours_decimal' => 0,
+                ]);
+            } else {
+
+                $ws->started_at = Carbon::now();
+                $ws->ended_at   = null;
+                $ws->save();
+            }
+
+            $assignment->update(['status' => 'in_progress']);
+            $assignment->order->update(['status' => 'in_progress']);
+
+            Log::info('Work session started/resumed', [
+                'work_session_id' => $ws->id,
+                'user_id'         => $user->id,
+                'assignment_id'   => $assignment->id,
+            ]);
+
+            return back()->with('success', 'Sesi kerja dimulai.');
+
+        } catch (\Throwable $e) {
+            Log::error('Work session start error', [
+                'assignment_id' => $assignment->id ?? null,
+                'error'         => $e->getMessage(),
+            ]);
+            return back()->with('error', 'Gagal memulai sesi kerja.');
+        }
+    }
+
+    /**
+     * Stop work session (akumulasi jam)
+     */
+    public function stop(Request $request, WorkSession $workSession)
+    {
+        try {
+            $user = Auth::user();
+
+            if ($workSession->user_id !== $user->id) {
+                abort(403,'Anda tidak berhak menghentikan sesi ini.');
+            }
+
+            if ($workSession->ended_at) {
+                return back()->with('error', 'Sesi kerja sudah dihentikan.');
+            }
+
+            $workSession->ended_at = Carbon::now();
+            $diffHours = $workSession->ended_at->floatDiffInHours($workSession->started_at);
+
+            // akumulasi jam (tidak overwrite)
+            $workSession->hours_decimal = ($workSession->hours_decimal ?? 0) + $diffHours;
+            $workSession->save();
+
+            // Update status assignment & order jadi 'completed'
+            $workSession->assignment->update(['status' => 'completed']);
+            $workSession->assignment->order->update(['status' => 'completed']);
+
+            Log::info('Work session stopped', [
+                'work_session_id' => $workSession->id,
+                'user_id'         => $user->id,
+                'added_hours'     => $diffHours,
+                'total_hours'     => $workSession->hours_decimal,
+            ]);
+
+            return back()->with('success', 'Sesi kerja dihentikan.');
+
+        } catch (\Throwable $e) {
+            Log::error('Work session stop error', [
+                'work_session_id' => $workSession->id ?? null,
+                'error'           => $e->getMessage(),
+            ]);
+            return back()->with('error', 'Gagal menghentikan sesi kerja.');
+        }
+    }
+
 }

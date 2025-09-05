@@ -6,6 +6,7 @@ use App\Models\Assignment;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +17,7 @@ class AssignmentController extends Controller
 {
     public function index()
     {
+        // dd(Auth::user()->role);
         try {
             $user = Auth::user();
 
@@ -32,7 +34,7 @@ class AssignmentController extends Controller
                     ->latest('scheduled_start')->paginate(15);
             }
 
-            return view('assignments.index', compact('assignments'));
+            return view('activities.assignments.index', compact('assignments'));
         } catch (\Throwable $e) {
             Log::error('Assignments index error', ['error' => $e->getMessage()]);
             return back()->with('error', 'Gagal memuat data penugasan.');
@@ -49,7 +51,7 @@ class AssignmentController extends Controller
             $guides  = User::where('role','guide')->where('is_active',1)->orderBy('name')->get();
             $vehicles = Vehicle::orderBy('plate_no')->get();
 
-            return view('assignments.create', compact('order','drivers','guides','vehicles'));
+            return view('activities.assignments.create', compact('order','drivers','guides','vehicles'));
         } catch (\Throwable $e) {
             Log::error('Assignments create error', ['error' => $e->getMessage()]);
             return back()->with('error', 'Gagal memuat form penugasan.');
@@ -71,54 +73,77 @@ class AssignmentController extends Controller
                 'status'          => ['required','in:assigned,in_progress,completed,cancelled'],
             ]);
 
-            // Validasi role
-            if (!empty($data['driver_id']) && !User::where('id',$data['driver_id'])->where('role','driver')->exists()) {
-                Log::warning('Assignment store invalid driver role', $data);
-                return back()->withErrors(['driver_id' => 'User yang dipilih bukan driver.'])->withInput();
-            }
-            if (!empty($data['guide_id']) && !User::where('id',$data['guide_id'])->where('role','guide')->exists()) {
-                Log::warning('Assignment store invalid guide role', $data);
-                return back()->withErrors(['guide_id' => 'User yang dipilih bukan guide.'])->withInput();
-            }
 
-            // Cek bentrok jadwal jika ada jadwal
-            $start = $data['scheduled_start'] ?? null;
-            $end   = $data['scheduled_end']   ?? null;
-            if ($start && $end) {
-                if (!empty($data['driver_id']) && $this->hasOverlap($data['driver_id'], $start, $end, 'driver_id')) {
-                    Log::warning('Driver overlap', ['driver_id' => $data['driver_id'], 'start' => $start, 'end' => $end]);
-                    return back()->withErrors(['driver_id' => 'Driver bentrok dengan penugasan lain.'])->withInput();
-                }
-                if (!empty($data['guide_id']) && $this->hasOverlap($data['guide_id'], $start, $end, 'guide_id')) {
-                    Log::warning('Guide overlap', ['guide_id' => $data['guide_id'], 'start' => $start, 'end' => $end]);
-                    return back()->withErrors(['guide_id' => 'Guide bentrok dengan penugasan lain.'])->withInput();
+            foreach (['scheduled_start','scheduled_end'] as $col) {
+                if (!empty($data[$col])) {
+                    $data[$col] = \Carbon\Carbon::parse($data[$col])->format('Y-m-d H:i:s');
                 }
             }
 
             return DB::transaction(function () use ($data) {
+
                 $assignment = Assignment::create($data);
 
-                // Update status order -> assigned
+
                 $order = Order::find($data['order_id']);
                 if ($order && $order->status === 'pending') {
                     $order->update(['status' => 'assigned']);
                 }
 
-                Log::info('Assignment created', ['assignment_id' => $assignment->id]);
-                return redirect()->route('assignments.show', $assignment)->with('success', 'Penugasan berhasil dibuat.');
+
+                if (!empty($assignment->driver_id)) {
+                    Notification::create([
+                        'user_id'       => $assignment->driver_id,
+                        'assignment_id' => $assignment->id,
+                        'title'         => 'Tugas Baru',
+                        'body'          => "Anda ditugaskan untuk order #{$assignment->order_id} "
+                            . ($assignment->scheduled_start ? 'mulai ' . $assignment->scheduled_start : ''),
+                    ]);
+                }
+
+
+                if (!empty($assignment->guide_id)) {
+                    Notification::create([
+                        'user_id'       => $assignment->guide_id,
+                        'assignment_id' => $assignment->id,
+                        'title'         => 'Tugas Baru',
+                        'body'          => "Anda ditugaskan untuk order #{$assignment->order_id} "
+                            . ($assignment->scheduled_start ? 'mulai ' . $assignment->scheduled_start : ''),
+                    ]);
+                }
+
+                Log::info('Assignment created', [
+                    'assignment_id' => $assignment->id,
+                    'order_id'      => $assignment->order_id,
+                    'driver_id'     => $assignment->driver_id,
+                    'guide_id'      => $assignment->guide_id,
+                    'vehicle_id'    => $assignment->vehicle_id,
+                    'scheduled_start' => $assignment->scheduled_start,
+                    'scheduled_end'   => $assignment->scheduled_end,
+                ]);
+
+                return redirect()
+                    ->route('assignments.show', $assignment)
+                    ->with('success', 'Penugasan berhasil dibuat & notifikasi terkirim.');
             });
 
         } catch (\Throwable $e) {
-            Log::error('Assignment store error', ['payload' => $request->all(), 'error' => $e->getMessage()]);
+            Log::error('Assignment store error', [
+                'payload' => $request->all(),
+                'error'   => $e->getMessage(),
+                'trace'   => $e->getTraceAsString(),
+            ]);
             return back()->withInput()->with('error', 'Gagal membuat penugasan.');
         }
     }
+
+
 
     public function show(Assignment $assignment)
     {
         try {
             $assignment->load(['order.customer','driver','guide','vehicle','workSessions']);
-            return view('assignments.show', compact('assignment'));
+            return view('activities.assignments.show', compact('assignment'));
         } catch (\Throwable $e) {
             Log::error('Assignment show error', ['assignment_id' => $assignment->id, 'error' => $e->getMessage()]);
             return back()->with('error', 'Gagal memuat detail penugasan.');
@@ -133,7 +158,7 @@ class AssignmentController extends Controller
             $guides  = User::where('role','guide')->where('is_active',1)->orderBy('name')->get();
             $vehicles = Vehicle::orderBy('plate_no')->get();
 
-            return view('assignments.edit', compact('assignment','drivers','guides','vehicles'));
+            return view('activities.assignments.edit', compact('assignment','drivers','guides','vehicles'));
         } catch (\Throwable $e) {
             Log::error('Assignment edit error', ['assignment_id' => $assignment->id, 'error' => $e->getMessage()]);
             return back()->with('error', 'Gagal memuat form edit penugasan.');

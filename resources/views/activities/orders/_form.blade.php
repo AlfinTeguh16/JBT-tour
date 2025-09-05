@@ -1,4 +1,4 @@
-<x-form :action="$action" method="{{ $method ?? 'POST' }}">
+<form type="form" :action="$action" method="{{ $method ?? 'POST' }}">
   @csrf
   @if(($method ?? 'POST') !== 'POST')
     @method($method)
@@ -62,4 +62,4 @@
     <x-button type="submit">Simpan</x-button>
     <x-button :href="route('orders.index')" variant="secondary">Batal</x-button>
   </div>
-</x-form>
+</form>

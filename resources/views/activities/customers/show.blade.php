@@ -4,7 +4,7 @@
 @section('content')
 <h1 class="text-2xl font-bold mb-6">Detail Customer</h1>
 
-<div class="bg-white rounded border p-5">
+<div class="bg-white  p-5">
   <div class="grid gap-2 md:grid-cols-2">
     <div><span class="text-gray-500 text-sm">Nama</span><div class="font-medium">{{ $customer->name }}</div></div>
     <div><span class="text-gray-500 text-sm">Email</span><div class="font-medium">{{ $customer->email ?? '-' }}</div></div>
@@ -14,7 +14,7 @@
 </div>
 
 <h2 class="text-lg font-semibold mt-8 mb-3">Orders</h2>
-<div class="overflow-x-auto bg-white rounded border">
+<div class="overflow-x-auto bg-white p-5">
   <table class="min-w-full text-sm">
     <thead class="border-b text-gray-600"><tr>
       <th class="text-left p-3">Requested</th>

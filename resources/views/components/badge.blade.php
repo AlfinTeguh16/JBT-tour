@@ -4,11 +4,11 @@
 ])
 
 @php
-    $base = 'absolute inline-block w-fit p-2 text-xs font-semibold rounded-lg shadow';
+    $base = ' inline-block w-fit p-2 text-xs font-semibold rounded-lg shadow';
     $variants = [
-        'success' => 'bg-green-500 text-white',
-        'warning' => 'bg-yellow-400 text-gray-800',
-        'failed'  => 'bg-red-500 text-white',
+        'success' => 'bg-green-800 text-white',
+        'warning' => 'bg-yellow-800 text-gray-800',
+        'failed'  => 'bg-red-800 text-white',
     ];
     $positions = [
         'top-right'    => 'top-2 right-2',

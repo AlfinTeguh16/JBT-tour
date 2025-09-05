@@ -8,16 +8,27 @@ use Illuminate\Support\Facades\Log;
 
 class CustomerController extends Controller
 {
-    public function index()
+   public function index(Request $request)
     {
         try {
-            $customers = Customer::latest()->paginate(15);
-            return view('activities.customers.index', compact('customers'));
+
+            $q = $request->input('q', '');
+
+            $customers = Customer::when($q, function ($query, $q) {
+                return $query->where('name', 'like', "%$q%")
+                            ->orWhere('email', 'like', "%$q%")
+                            ->orWhere('phone', 'like', "%$q%");
+            })
+            ->latest()
+            ->paginate(15);
+
+            return view('activities.customers.index', compact('customers', 'q'));
         } catch (\Throwable $e) {
             Log::error('Customers index error', ['error' => $e->getMessage()]);
             return back()->with('error', 'Gagal memuat data customer.');
         }
     }
+
 
     public function search(Request $request)
     {

@@ -3,14 +3,14 @@
 
 @section('content')
 <x-card>
-  <x-slot name="header">
+  <div name="header">
     <div class="flex items-center justify-between">
       <div class="text-xl font-semibold">Orders</div>
       @if(in_array(auth()->user()->role, ['admin','staff']))
-        <x-button :href="route('orders.create')">Tambah</x-button>
+        <x-button onclick="window.location='{{ route('orders.create') }}'">Tambah</x-button>
       @endif
     </div>
-  </x-slot>
+  </div>
 
   <form action="{{ route('orders.index') }}" method="get" class="mb-4 flex gap-2">
     <input type="text" name="q" value="{{ $q ?? '' }}" class="rounded border-gray-300 w-full" placeholder="Cari pickup/dropoff/customer">
@@ -35,15 +35,28 @@
             <td class="p-3">{{ $o->customer->name ?? '-' }}</td>
             <td class="p-3">{{ $o->pickup_location }} → {{ $o->dropoff_location }}</td>
             <td class="p-3">
-              <x-badge>{{ ucfirst(str_replace('_',' ',$o->status)) }}</x-badge>
+                @php
+                    $statusColors = [
+                        'pending'     => 'bg-yellow-100 text-yellow-800',
+                        'assigned'    => 'bg-blue-100 text-blue-800',
+                        'in_progress' => 'bg-indigo-100 text-indigo-800',
+                        'completed'   => 'bg-green-100 text-green-800',
+                        'cancelled'   => 'bg-red-100 text-red-800',
+                    ];
+                    $cls = $statusColors[$o->status] ?? 'bg-gray-100 text-gray-800';
+                @endphp
+
+                <span class="px-2 py-1 text-xs font-medium rounded {{ $cls }}">
+                    {{ ucfirst(str_replace('_',' ',$o->status)) }}
+                </span>
             </td>
             <td class="p-3 text-right">
-              <x-button :href="route('orders.show',$o)" variant="link">Detail</x-button>
+              <x-button onclick="window.location='{{ route('orders.show',$o) }}'" variant="secondary">Detail</x-button>
               @if(in_array(auth()->user()->role, ['admin','staff']))
-                <x-button :href="route('orders.edit',$o)" variant="link">Edit</x-button>
+                <x-button onclick="window.location='{{ route('orders.edit',$o) }}'" variant="edit">Edit</x-button>
                 <x-form :action="route('orders.destroy',$o)" method="POST" class="inline">
                   @csrf @method('DELETE')
-                  <x-button type="submit" variant="danger">Hapus</x-button>
+                  <x-button type="submit" variant="delete">Hapus</x-button>
                 </x-form>
               @endif
             </td>

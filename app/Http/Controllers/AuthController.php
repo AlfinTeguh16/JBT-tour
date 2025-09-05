@@ -34,11 +34,11 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         try {
-            $uid = Auth::id();
+            $id = Auth::id();
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
-            Log::info('Logout success', ['user_id' => $uid]);
+            Log::info('Logout success', ['user_id' => $id]);
 
             return redirect()->route('auth.login');
         } catch (\Throwable $e) {

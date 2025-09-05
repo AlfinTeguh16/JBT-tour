@@ -10,29 +10,52 @@ use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
             $user = Auth::user();
+            $q = $request->get('q', '');  
 
-            if (in_array($user->role, ['admin','staff'])) {
-                $orders = Order::with(['customer','assignment.driver','assignment.guide','assignment.vehicle'])
-                    ->latest('requested_at')->paginate(15);
+            if (in_array($user->role, ['admin', 'staff'])) {
+                $orders = Order::with(['customer', 'assignment.driver', 'assignment.guide', 'assignment.vehicle'])
+                    ->where(function($query) use ($q) {
+                        if ($q) {
+                            $query->where('pickup_location', 'like', "%$q%")
+                                ->orWhere('dropoff_location', 'like', "%$q%")
+                                ->orWhereHas('customer', function ($query) use ($q) {
+                                    $query->where('name', 'like', "%$q%");
+                                });
+                        }
+                    })
+                    ->latest('requested_at')
+                    ->paginate(15);
             } else {
                 $orders = Order::whereHas('assignment', function ($q) use ($user) {
                         $field = $user->role === 'driver' ? 'driver_id' : 'guide_id';
                         $q->where($field, $user->id);
                     })
-                    ->with(['customer','assignment.driver','assignment.guide','assignment.vehicle'])
-                    ->latest('requested_at')->paginate(15);
+                    ->with(['customer', 'assignment.driver', 'assignment.guide', 'assignment.vehicle'])
+                    ->where(function($query) use ($q) {
+                        if ($q) {
+                            $query->where('pickup_location', 'like', "%$q%")
+                                ->orWhere('dropoff_location', 'like', "%$q%")
+                                ->orWhereHas('customer', function ($query) use ($q) {
+                                    $query->where('name', 'like', "%$q%");
+                                });
+                        }
+                    })
+                    ->latest('requested_at')
+                    ->paginate(15);
             }
 
-            return view('activities.orders.index', compact('orders'));
+            return view('activities.orders.index', compact('orders', 'q'));
+
         } catch (\Throwable $e) {
             Log::error('Orders index error', ['error' => $e->getMessage()]);
             return back()->with('error', 'Gagal memuat data order.');
         }
     }
+
 
     public function search(Request $request)
     {
@@ -66,6 +89,7 @@ class OrderController extends Controller
 
     public function store(Request $request)
     {
+        // dd($request->all());
         try {
             $data = $request->validate([
                 'customer_id'      => ['required','exists:customers,id'],
@@ -76,8 +100,8 @@ class OrderController extends Controller
                 'notes'            => ['nullable','string'],
                 'status'           => ['nullable','in:pending,assigned,in_progress,completed,cancelled'],
             ]);
-            $data['status'] = $data['status'] ?? 'pending';
 
+            $data['status'] = $data['status'] ?? 'pending';
             $order = Order::create($data);
             Log::info('Order created', ['order_id' => $order->id]);
 

@@ -16,11 +16,13 @@ use App\Http\Controllers\NotificationController;
 |--------------------------------------------------------------------------
 */
 
-// Public
+
+
 Route::redirect('/', '/login');
 
 Route::middleware('guest')->group(function () {
-    Route::view('/login', 'auth.login')->name('auth.login');
+
+    Route::view('/login', 'auth.login')->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('auth.login.post');
 });
 
@@ -84,9 +86,9 @@ Route::prefix('vehicles')->name('vehicles.')->middleware('auth')->group(function
 // Orders
 // ====================================================================
 Route::prefix('orders')->name('orders.')->middleware('auth')->group(function () {
-    Route::middleware('role:staff')->group(function () {
-        Route::get('create', [OrderController::class, 'create'])->name('create');
+    Route::middleware('role:admin|staff')->group(function () {
         Route::post('/', [OrderController::class, 'store'])->name('store');
+        Route::get('create', [OrderController::class, 'create'])->name('create');
         Route::get('{order}/edit', [OrderController::class, 'edit'])->name('edit');
         Route::put('{order}', [OrderController::class, 'update'])->name('update');
         Route::delete('{order}', [OrderController::class, 'destroy'])->name('destroy');
@@ -103,7 +105,7 @@ Route::prefix('orders')->name('orders.')->middleware('auth')->group(function () 
 // Assignments
 // ====================================================================
 Route::prefix('assignments')->name('assignments.')->middleware('auth')->group(function () {
-    Route::middleware('role:staff')->group(function () {
+    Route::middleware('role:admin|staff')->group(function () {
         Route::get('create', [AssignmentController::class, 'create'])->name('create');
         Route::post('/', [AssignmentController::class, 'store'])->name('store');
         Route::get('{assignment}/edit', [AssignmentController::class, 'edit'])->name('edit');
@@ -127,7 +129,14 @@ Route::prefix('work-sessions')->name('work-sessions.')->middleware('auth')->grou
         Route::get('{work_session}/edit', [WorkSessionController::class, 'edit'])->name('edit');
         Route::put('{work_session}', [WorkSessionController::class, 'update'])->name('update');
         Route::delete('{work_session}', [WorkSessionController::class, 'destroy'])->name('destroy');
-    });
+        // Start work session (driver/guide klik "Start")
+        Route::post('/assignments/{assignment}/work-sessions/start', [WorkSessionController::class, 'start'])
+            ->name('start');
+
+        // Stop work session (driver/guide klik "Stop")
+        Route::post('/work-sessions/{workSession}/stop', [WorkSessionController::class, 'stop'])
+            ->name('stop');
+        });
 
     Route::middleware('role:admin|staff|driver|guide')->group(function () {
         Route::get('/', [WorkSessionController::class, 'index'])->name('index');
@@ -143,5 +152,19 @@ Route::prefix('notifications')->name('notifications.')->middleware('auth')->grou
         Route::get('/', [NotificationController::class, 'index'])->name('index');
         Route::get('{notification}', [NotificationController::class, 'show'])->name('show');
         Route::post('{notification}/read', [NotificationController::class, 'markAsRead'])->name('markAsRead');
+        Route::post('{notification}/approve', [NotificationController::class, 'approve'])->name('approve');
+        Route::post('{notification}/decline', [NotificationController::class, 'decline'])->name('decline');
+    });
+});
+
+// ====================================================================
+// Tracking (driver locations) - untuk real-time tracking
+// ====================================================================
+Route::prefix('tracking')->name('tracking.')->middleware('auth')->group(function () {
+    Route::middleware('role:driver|guide')->group(function () {
+        Route::post('/tracking/{workSession}', [TrackingController::class, 'store'])
+        ->middleware('auth')
+        ->name('tracking.store');
+
     });
 });

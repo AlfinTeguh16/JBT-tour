@@ -10,8 +10,15 @@ class Assignment extends Model
     use HasFactory;
 
     protected $fillable = [
-        'order_id','staff_id','driver_id','guide_id','vehicle_id',
-        'scheduled_start','scheduled_end','estimated_hours','status'
+        'order_id',
+        'staff_id',
+        'driver_id',
+        'guide_id',
+        'vehicle_id',
+        'scheduled_start',
+        'scheduled_end',
+        'estimated_hours',
+        'status'
     ];
 
     public function order()

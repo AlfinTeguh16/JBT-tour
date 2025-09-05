@@ -52,5 +52,10 @@ class DatabaseSeeder extends Seeder
             'role' => 'guide',
             'is_active' => true,
         ]);
+
+        $this->call([
+        VehicleSeeder::class,
+        CustomerSeeder::class,
+    ]);
     }
 }

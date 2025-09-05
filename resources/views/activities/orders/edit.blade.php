@@ -6,9 +6,13 @@
   <x-slot name="header">
     <div class="text-xl font-semibold">Edit Order</div>
   </x-slot>
-  @include('activities.orders._form', [
-    'action' => route('orders.update',$order),
-    'method' => 'PUT',
-  ])
+
+   <form action="{{ route('orders.update',$order) }}" method="post">
+    @csrf
+    @include('activities.orders._form', [
+      'action' => route('orders.update',$order),
+      'method' => 'PUT',
+    ])
+  </form>
 </x-card>
 @endsection

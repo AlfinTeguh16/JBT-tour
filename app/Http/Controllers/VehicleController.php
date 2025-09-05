@@ -12,7 +12,7 @@ class VehicleController extends Controller
     {
         try {
             $vehicles = Vehicle::latest()->paginate(15);
-            return view('vehicles.index', compact('vehicles'));
+            return view('activities.vehicles.index', compact('vehicles'));
         } catch (\Throwable $e) {
             Log::error('Vehicles index error', ['error' => $e->getMessage()]);
             return back()->with('error', 'Gagal memuat data kendaraan.');
@@ -21,7 +21,7 @@ class VehicleController extends Controller
 
     public function create()
     {
-        return view('vehicles.create');
+        return view('activities.vehicles.create');
     }
 
     public function store(Request $request)
@@ -48,17 +48,20 @@ class VehicleController extends Controller
     public function show(Vehicle $vehicle)
     {
         try {
+            // Memuat assignments, order dan customer terkait
             $vehicle->load('assignments.order.customer');
-            return view('vehicles.show', compact('vehicle'));
+
+            return view('activities.vehicles.show', compact('vehicle'));
         } catch (\Throwable $e) {
             Log::error('Vehicle show error', ['vehicle_id' => $vehicle->id, 'error' => $e->getMessage()]);
             return back()->with('error', 'Gagal memuat detail kendaraan.');
         }
     }
 
+
     public function edit(Vehicle $vehicle)
     {
-        return view('vehicles.edit', compact('vehicle'));
+        return view('activities.vehicles.edit', compact('vehicle'));
     }
 
     public function update(Request $request, Vehicle $vehicle)

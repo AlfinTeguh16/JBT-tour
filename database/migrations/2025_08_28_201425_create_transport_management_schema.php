@@ -22,7 +22,7 @@ return new class extends Migration
             $table->longText('payload');
             $table->integer('last_activity')->index();
         });
-        
+
         // Users
         Schema::create('users', function (Blueprint $table) {
             $table->id();
@@ -102,8 +102,22 @@ return new class extends Migration
             $table->string('title');
             $table->text('body')->nullable();
             $table->boolean('is_read')->default(false);
+            $table->foreignId('assignment_id')->nullable()->constrained()->nullOnDelete();
+            $table->enum('status', ['pending','approved','declined'])->default('pending');
             $table->timestamps();
         });
+
+        // Driver and Guide Locations (untuk tracking real-time)
+        Schema::create('driver_locations', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // driver
+            $table->foreignId('work_session_id')->constrained()->cascadeOnDelete();
+            $table->decimal('latitude', 10, 7);
+            $table->decimal('longitude', 10, 7);
+            $table->timestamp('recorded_at')->useCurrent();
+            $table->timestamps();
+        });
+
     }
 
     public function down(): void
@@ -115,5 +129,8 @@ return new class extends Migration
         Schema::dropIfExists('vehicles');
         Schema::dropIfExists('customers');
         Schema::dropIfExists('users');
+        Schema::dropIfExists('driver_locations');
+        Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
     }
 };

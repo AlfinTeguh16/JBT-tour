@@ -15,16 +15,14 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    /**
-     * Admin: ringkasan global + monitoring operasional (tanpa jam kerja pribadi).
-     */
+
     public function admin(Request $request)
     {
         $user = Auth::user();
         $now = Carbon::now();
         $today = $now->toDateString();
 
-        // Ringkasan global
+
         $summary = [
             'total_users'     => User::count(),
             'total_customers' => Customer::count(),
@@ -138,7 +136,7 @@ class DashboardController extends Controller
      */
     public function driver(Request $request)
     {
-        $user = Auth::user(); // pastikan role=driver oleh middleware
+        $user = Auth::user(); 
         $now = Carbon::now();
         $today = $now->toDateString();
         $weekStart = $now->copy()->startOfWeek();

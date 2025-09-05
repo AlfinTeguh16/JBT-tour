@@ -20,7 +20,7 @@
     <div class="md:col-span-2"><span class="text-sm text-gray-500">Catatan</span><div class="font-medium">{{ $order->notes ?? '-' }}</div></div>
     <div class="md:col-span-2">
       <span class="text-sm text-gray-500">Status</span>
-      <div class="mt-1"><x-badge>{{ ucfirst(str_replace('_',' ',$order->status)) }}</x-badge></div>
+      <div class="mt-1">{{ ucfirst(str_replace('_',' ',$order->status)) }}</div>
     </div>
   </div>
 </x-card>
@@ -38,11 +38,11 @@
       <div><span class="text-sm text-gray-500">Start</span><div class="font-medium">{{ $order->assignment->scheduled_start ?? '-' }}</div></div>
       <div><span class="text-sm text-gray-500">End</span><div class="font-medium">{{ $order->assignment->scheduled_end ?? '-' }}</div></div>
       <div><span class="text-sm text-gray-500">Status</span>
-        <div class="mt-1"><x-badge>{{ $order->assignment->status }}</x-badge></div>
+        <div class="mt-1"><x-badge>{{ ucwords(str_replace('_', ' ', $order->assignment->status)) }}</x-badge></div>
       </div>
     </div>
     <div class="mt-4">
-      <x-button :href="route('assignments.show',$order->assignment)" variant="secondary">Lihat Penugasan</x-button>
+      <x-button onclick="window.location='{{ route('assignments.show',$order->assignment) }}'" variant="secondary">Lihat Penugasan</x-button>
     </div>
   @else
     <div class="text-gray-500">Belum ada penugasan.</div>
