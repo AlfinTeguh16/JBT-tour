@@ -10,6 +10,7 @@ use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\WorkSessionController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\TrackingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,7 +32,8 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 
 // Dashboard redirect sesuai role
 Route::middleware('auth')->get('/dashboard', function () {
-    return match(auth()->user()->role) {
+    $user = \Illuminate\Support\Facades\Auth::user();
+    return match($user->role) {
         'admin'  => redirect()->route('dashboard.admin'),
         'staff'  => redirect()->route('dashboard.staff'),
         'driver' => redirect()->route('dashboard.driver'),
