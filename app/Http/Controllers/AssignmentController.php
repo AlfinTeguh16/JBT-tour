@@ -268,4 +268,62 @@ class AssignmentController extends Controller
             })
             ->exists();
     }
+
+    public function chartView()
+    {
+        $years = Assignment::selectRaw('YEAR(created_at) as year')
+                ->distinct()
+                ->orderByDesc('year')
+                ->pluck('year');
+
+        if ($years->isEmpty()) {
+            $years = collect([date('Y')]);
+        }
+
+        // data lain yg kamu pass ke view...
+        return view('dashboard.staff', [
+            'years' => $years,
+        ]);
+    }
+
+    public function chartData(Request $request)
+    {
+        $year = intval($request->get('year', date('Y')));
+
+        // Query: hanya yang status = completed dan sesuai tahun
+        // Kembalikan jumlah per bulan, memisahkan driver vs guide
+        $rows = Assignment::query()
+            ->where('status', 'completed')
+            ->whereYear('created_at', $year)
+            ->selectRaw(
+                'MONTH(created_at) as month,
+                 SUM(CASE WHEN driver_id IS NOT NULL THEN 1 ELSE 0 END) as driver_count,
+                 SUM(CASE WHEN guide_id IS NOT NULL THEN 1 ELSE 0 END) as guide_count'
+            )
+            ->groupBy('month')
+            ->get();
+
+        // Inisiasi array 12 bulan dengan 0
+        $driverCounts = array_fill(0, 12, 0);
+        $guideCounts  = array_fill(0, 12, 0);
+
+        foreach ($rows as $row) {
+            $idx = intval($row->month) - 1; // index 0..11
+            $driverCounts[$idx] = intval($row->driver_count);
+            $guideCounts[$idx]  = intval($row->guide_count);
+        }
+
+        // Labels nama bulan
+        $labels = [
+            'Jan','Feb','Mar','Apr','May','Jun',
+            'Jul','Aug','Sep','Oct','Nov','Dec'
+        ];
+
+        return response()->json([
+            'labels' => $labels,
+            'driver' => $driverCounts,
+            'guide'  => $guideCounts,
+            'year'   => $year,
+        ]);
+    }
 }

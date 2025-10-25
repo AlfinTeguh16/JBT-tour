@@ -46,6 +46,26 @@
     </a>
   </div>
 
+  <div class="container">
+      <h3>Grafik Jumlah Assignment per Bulan (Completed)</h3>
+
+      <div class="mb-3">
+          <label for="yearSelect" class="form-label">Pilih Tahun</label>
+          @php
+              $yearsList = $years ?? [date('Y')];
+          @endphp
+
+          <select id="yearSelect" class="form">
+              @foreach($yearsList as $y)
+                  <option value="{{ $y }}" @if($loop->first) selected @endif>{{ $y }}</option>
+              @endforeach
+          </select>
+
+      </div>
+
+      <canvas id="assignmentsChart" class="w-full max-h-[500px]"></canvas>
+  </div>
+
   <div class="grid gap-6 lg:grid-cols-3">
     {{-- Pending Orders --}}
     <div class="rounded-2xl border border-gray-200 p-5 lg:col-span-2">
@@ -198,4 +218,94 @@
     @endif
   </div>
 </section>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('assignmentsChart').getContext('2d');
+        const yearSelect = document.getElementById('yearSelect');
+
+        // Default empty chart config
+        const config = {
+            type: 'bar', // atau 'line'
+            data: {
+                labels: [], // akan diisi response.labels
+                datasets: [
+                    {
+                        label: 'Driver',
+                        data: [],
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Guide',
+                        data: [],
+                        backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { precision: 0 }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                }
+            }
+        };
+
+        const chart = new Chart(ctx, config);
+
+        async function loadData(year) {
+            try {
+                const url = new URL('{{ route('assignments.chart.data') }}', window.location.origin);
+                url.searchParams.append('year', year);
+
+                const res = await fetch(url.href, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!res.ok) throw new Error('Gagal mengambil data: ' + res.status);
+
+                const json = await res.json();
+
+                // Update chart data
+                chart.data.labels = json.labels;
+                chart.data.datasets[0].data = json.driver;
+                chart.data.datasets[1].data = json.guide;
+                chart.update();
+            } catch (err) {
+                console.error(err);
+                alert('Gagal memuat data chart. Cek console untuk detail.');
+            }
+        }
+
+        // Inisialisasi first load
+        loadData(yearSelect.value);
+
+        // On change year
+        yearSelect.addEventListener('change', function () {
+            loadData(this.value);
+        });
+    });
+    </script>
 @endsection

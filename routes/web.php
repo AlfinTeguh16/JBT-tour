@@ -24,7 +24,7 @@ Route::redirect('/', '/login');
 
 Route::middleware('guest')->group(function () {
 
-    Route::view('/login', 'auth.login')->name('login');
+    Route::view('/login', 'auth.login')->name('auth.login');
     Route::post('/login', [AuthController::class, 'login'])->name('auth.login.post');
 });
 
@@ -137,6 +137,9 @@ Route::prefix('assignments')->name('assignments.')->middleware('auth')->group(fu
         Route::get('{assignment}/edit', [AssignmentController::class, 'edit'])->name('edit');
         Route::put('{assignment}', [AssignmentController::class, 'update'])->name('update');
         Route::delete('{assignment}', [AssignmentController::class, 'destroy'])->name('destroy');
+        
+        Route::get('chart', [AssignmentController::class, 'chartView'])->name('chart');
+        Route::get('chart-data', [AssignmentController::class, 'chartData'])->name('chart.data');
     });
 
     Route::middleware('role:admin|staff|driver|guide')->group(function () {
