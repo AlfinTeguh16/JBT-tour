@@ -77,4 +77,51 @@ class User extends Authenticatable
     {
         return $this->hasMany(Notification::class);
     }
+
+
+    public function monthlyHoursAsDriver($year = null, $month = null)
+    {
+        $year = $year ?: now()->year;
+        $month = $month ?: now()->month;
+
+        return Assignment::where('driver_id', $this->id)
+            ->whereYear('scheduled_start', $year)
+            ->whereMonth('scheduled_start', $month)
+            ->whereIn('status', ['assigned','in_progress','completed'])
+            ->selectRaw('COALESCE(SUM(estimated_hours),0) as total')
+            ->value('total') ?: 0;
+    }
+
+    public function monthlyHoursAsGuide($year = null, $month = null)
+    {
+        $year = $year ?: now()->year;
+        $month = $month ?: now()->month;
+
+        return Assignment::where('guide_id', $this->id)
+            ->whereYear('scheduled_start', $year)
+            ->whereMonth('scheduled_start', $month)
+            ->whereIn('status', ['assigned','in_progress','completed'])
+            ->selectRaw('COALESCE(SUM(estimated_hours),0) as total')
+            ->value('total') ?: 0;
+    }
+
+    /**
+     * Helper umum: cek apakah user punya limit dan masih bisa menampung tambahan jam
+     */
+    public function canAcceptAdditionalHours(float $additionalHours, string $role = 'driver', $year = null, $month = null): bool
+    {
+        $year = $year ?: now()->year;
+        $month = $month ?: now()->month;
+
+        // jika tidak ada limit => dianggap unlimited
+        if (is_null($this->monthly_hours_limit)) {
+            return true;
+        }
+
+        $used = $role === 'guide'
+            ? $this->monthlyHoursAsGuide($year, $month)
+            : $this->monthlyHoursAsDriver($year, $month);
+
+        return ($used + $additionalHours) <= (float) $this->monthly_hours_limit;
+    }
 }

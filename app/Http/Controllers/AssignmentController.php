@@ -74,9 +74,8 @@ class AssignmentController extends Controller
                 'scheduled_start' => ['nullable','date'],
                 'scheduled_end'   => ['nullable','date','after:scheduled_start'],
                 'estimated_hours' => ['nullable','numeric','min:0'],
-                'status'          => ['required','in:assigned,in_progress,completed,cancelled'],
             ]);
-
+            
 
             foreach (['scheduled_start','scheduled_end'] as $col) {
                 if (!empty($data[$col])) {
@@ -84,62 +83,121 @@ class AssignmentController extends Controller
                 }
             }
 
-            return DB::transaction(function () use ($data) {
+            // compute estimated_hours if missing (from scheduled_start/end)
+            if (empty($data['estimated_hours']) && !empty($data['scheduled_start']) && !empty($data['scheduled_end'])) {
+                $start = \Carbon\Carbon::parse($data['scheduled_start']);
+                $end   = \Carbon\Carbon::parse($data['scheduled_end']);
+                $data['estimated_hours'] = round($end->floatDiffInHours($start), 2);
+            }
+
+            $estimatedHours = isset($data['estimated_hours']) ? (float)$data['estimated_hours'] : 0.0;
+
+            return DB::transaction(function () use ($data, $request, $estimatedHours) {
+
+                // check in_progress (as before)
+                $driverBusy = false;
+                $guideBusy  = false;
+
+                if (!empty($data['driver_id'])) {
+                    $driverBusy = Assignment::where('driver_id', $data['driver_id'])
+                        ->where('status', 'in_progress')
+                        ->lockForUpdate()
+                        ->exists();
+                }
+
+                if (!empty($data['guide_id'])) {
+                    $guideBusy = Assignment::where('guide_id', $data['guide_id'])
+                        ->where('status', 'in_progress')
+                        ->lockForUpdate()
+                        ->exists();
+                }
+
+                // check monthly hours limit
+                $driverLimitExceeded = false;
+                $guideLimitExceeded  = false;
+
+                if (!empty($data['driver_id'])) {
+                    $driver = User::find($data['driver_id']);
+                    if ($driver && !$driver->canAcceptAdditionalHours($estimatedHours, 'driver',
+                            Carbon::parse($data['scheduled_start'] ?? now())->year,
+                            Carbon::parse($data['scheduled_start'] ?? now())->month
+                        )) {
+                        $driverLimitExceeded = true;
+                    }
+                }
+
+                if (!empty($data['guide_id'])) {
+                    $guide = User::find($data['guide_id']);
+                    if ($guide && !$guide->canAcceptAdditionalHours($estimatedHours, 'guide',
+                            Carbon::parse($data['scheduled_start'] ?? now())->year,
+                            Carbon::parse($data['scheduled_start'] ?? now())->month
+                        )) {
+                        $guideLimitExceeded = true;
+                    }
+                }
+
+                // can assign immediately only if not busy AND not exceeded limit
+                $canAssignImmediately = true;
+                if (!empty($data['driver_id']) && ($driverBusy || $driverLimitExceeded)) $canAssignImmediately = false;
+                if (!empty($data['guide_id']) && ($guideBusy || $guideLimitExceeded))   $canAssignImmediately = false;
+
+                $data['status'] = $canAssignImmediately ? 'assigned' : 'pending';
 
                 $assignment = Assignment::create($data);
 
+                if ($assignment->status === 'assigned') {
+                    $order = Order::find($data['order_id']);
+                    if ($order && $order->status === 'pending') {
+                        $order->update(['status' => 'assigned']);
+                    }
 
-                $order = Order::find($data['order_id']);
-                if ($order && $order->status === 'pending') {
-                    $order->update(['status' => 'assigned']);
-                }
+                    // create notifications (you might dispatch jobs instead)
+                    if (!empty($assignment->driver_id)) {
+                        Notification::create([
+                            'user_id'       => $assignment->driver_id,
+                            'assignment_id' => $assignment->id,
+                            'title'         => 'Tugas Baru',
+                            'body'          => "Anda ditugaskan untuk order #{$assignment->order_id} "
+                                . ($assignment->scheduled_start ? 'mulai ' . $assignment->scheduled_start : ''),
+                        ]);
+                    }
 
-
-                if (!empty($assignment->driver_id)) {
-                    Notification::create([
-                        'user_id'       => $assignment->driver_id,
-                        'assignment_id' => $assignment->id,
-                        'title'         => 'Tugas Baru',
-                        'body'          => "Anda ditugaskan untuk order #{$assignment->order_id} "
-                            . ($assignment->scheduled_start ? 'mulai ' . $assignment->scheduled_start : ''),
+                    if (!empty($assignment->guide_id)) {
+                        Notification::create([
+                            'user_id'       => $assignment->guide_id,
+                            'assignment_id' => $assignment->id,
+                            'title'         => 'Tugas Baru',
+                            'body'          => "Anda ditugaskan untuk order #{$assignment->order_id} "
+                                . ($assignment->scheduled_start ? 'mulai ' . $assignment->scheduled_start : ''),
+                        ]);
+                    }
+                } else {
+                    Log::info('Assignment created as pending due to busy/limit', [
+                        'assignment' => $assignment->only(['id','order_id']),
+                        'driverBusy' => $driverBusy,
+                        'guideBusy'  => $guideBusy,
+                        'driverLimitExceeded' => $driverLimitExceeded,
+                        'guideLimitExceeded'  => $guideLimitExceeded,
                     ]);
                 }
 
+                $message = $assignment->status === 'assigned'
+                    ? 'Penugasan berhasil dibuat & notifikasi terkirim.'
+                    : 'Penugasan disimpan sebagai pending: driver/guide sibuk atau telah mencapai batas jam bulanan.';
 
-                if (!empty($assignment->guide_id)) {
-                    Notification::create([
-                        'user_id'       => $assignment->guide_id,
-                        'assignment_id' => $assignment->id,
-                        'title'         => 'Tugas Baru',
-                        'body'          => "Anda ditugaskan untuk order #{$assignment->order_id} "
-                            . ($assignment->scheduled_start ? 'mulai ' . $assignment->scheduled_start : ''),
-                    ]);
-                }
-
-                Log::info('Assignment created', [
-                    'assignment_id' => $assignment->id,
-                    'order_id'      => $assignment->order_id,
-                    'driver_id'     => $assignment->driver_id,
-                    'guide_id'      => $assignment->guide_id,
-                    'vehicle_id'    => $assignment->vehicle_id,
-                    'scheduled_start' => $assignment->scheduled_start,
-                    'scheduled_end'   => $assignment->scheduled_end,
-                ]);
-
-                return redirect()
-                    ->route('assignments.show', $assignment)
-                    ->with('success', 'Penugasan berhasil dibuat & notifikasi terkirim.');
+                return redirect()->route('assignments.show', $assignment)->with('success', $message);
             });
 
         } catch (\Throwable $e) {
             Log::error('Assignment store error', [
-                'payload' => $request->all(),
+                'payload' => $request->except(['password','password_confirmation']),
                 'error'   => $e->getMessage(),
                 'trace'   => $e->getTraceAsString(),
             ]);
             return back()->withInput()->with('error', 'Gagal membuat penugasan.');
         }
     }
+
 
 
 
@@ -324,6 +382,39 @@ class AssignmentController extends Controller
             'driver' => $driverCounts,
             'guide'  => $guideCounts,
             'year'   => $year,
+        ]);
+    }
+
+    public function userHours(Request $request)
+    {
+        $userId = $request->query('user_id');
+        $role   = $request->query('role', 'driver'); // 'driver' atau 'guide'
+        $year   = (int) $request->query('year', Carbon::now()->year);
+        $month  = (int) $request->query('month', Carbon::now()->month);
+
+        if (! $userId) {
+            return response()->json(['error' => 'user_id required'], 422);
+        }
+
+        $user = User::find($userId);
+        if (! $user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        // gunakna method pada model User (sesuai implementasi sebelumnya)
+        $used = $role === 'guide'
+            ? (float) $user->monthlyHoursAsGuide($year, $month)
+            : (float) $user->monthlyHoursAsDriver($year, $month);
+
+        $limit = is_null($user->monthly_hours_limit) ? null : (float) $user->monthly_hours_limit;
+
+        return response()->json([
+            'user_id' => (int)$user->id,
+            'role'    => $role,
+            'year'    => $year,
+            'month'   => $month,
+            'used'    => $used,
+            'limit'   => $limit,
         ]);
     }
 }

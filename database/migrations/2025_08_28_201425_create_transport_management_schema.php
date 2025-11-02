@@ -8,12 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // password_reset_tokens
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
+        // sessions
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
@@ -23,7 +25,7 @@ return new class extends Migration
             $table->integer('last_activity')->index();
         });
 
-        // Users
+        // users
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name', 150);
@@ -32,10 +34,17 @@ return new class extends Migration
             $table->string('phone', 30)->nullable();
             $table->enum('role', ['admin','staff','driver','guide']);
             $table->boolean('is_active')->default(true);
+
+            // tambahkan remember token secara standar
+            $table->rememberToken();
+
+            // batas jam per bulan (nullable)
+            $table->decimal('monthly_hours_limit', 6, 2)->nullable();
+
             $table->timestamps();
         });
 
-        // Customers
+        // customers
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
             $table->string('name', 150);
@@ -45,7 +54,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Vehicles
+        // vehicles
         Schema::create('vehicles', function (Blueprint $table) {
             $table->id();
             $table->string('plate_no', 30)->unique();
@@ -56,7 +65,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Orders (langsung mewakili permintaan jasa transportasi)
+        // orders
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
@@ -69,14 +78,17 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Assignments (penugasan driver/guide/vehicle untuk order)
+        // assignments
         Schema::create('assignments', function (Blueprint $table) {
             $table->id();
+            // order_id unique — satu order hanya punya satu assignment pada desain ini
             $table->foreignId('order_id')->unique()->constrained()->cascadeOnDelete();
+
             $table->foreignId('staff_id')->constrained('users'); // staff yang assign
             $table->foreignId('driver_id')->nullable()->constrained('users');
             $table->foreignId('guide_id')->nullable()->constrained('users');
             $table->foreignId('vehicle_id')->nullable()->constrained('vehicles');
+
             $table->dateTime('scheduled_start')->nullable();
             $table->dateTime('scheduled_end')->nullable();
             $table->decimal('estimated_hours', 6, 2)->nullable();
@@ -84,7 +96,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Work sessions (jam kerja driver/guide)
+        // work_sessions
         Schema::create('work_sessions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete(); // driver/guide
@@ -95,7 +107,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Notifications
+        // notifications
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
@@ -107,7 +119,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Driver and Guide Locations (untuk tracking real-time)
+        // driver_locations
         Schema::create('driver_locations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // driver
@@ -117,11 +129,11 @@ return new class extends Migration
             $table->timestamp('recorded_at')->useCurrent();
             $table->timestamps();
         });
-
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('driver_locations');
         Schema::dropIfExists('notifications');
         Schema::dropIfExists('work_sessions');
         Schema::dropIfExists('assignments');
@@ -129,7 +141,6 @@ return new class extends Migration
         Schema::dropIfExists('vehicles');
         Schema::dropIfExists('customers');
         Schema::dropIfExists('users');
-        Schema::dropIfExists('driver_locations');
         Schema::dropIfExists('sessions');
         Schema::dropIfExists('password_reset_tokens');
     }

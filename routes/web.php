@@ -16,19 +16,22 @@ use App\Http\Controllers\TrackingController;
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
+|
+| Menggunakan Sanctum: middleware 'auth:sanctum' untuk melindungi route web.
+| Pastikan Laravel Sanctum sudah diinstall & dikonfigurasi.
+|
 */
-
-
 
 Route::redirect('/', '/login');
 
 Route::middleware('guest')->group(function () {
-
     Route::view('/login', 'auth.login')->name('auth.login');
     Route::post('/login', [AuthController::class, 'login'])->name('auth.login.post');
 });
 
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('auth.logout');
+Route::post('/logout', [AuthController::class, 'logout'])
+    ->middleware('auth') // <--- gunakan auth (session)
+    ->name('auth.logout');
 
 // Dashboard redirect sesuai role
 Route::middleware('auth')->get('/dashboard', function () {
@@ -42,28 +45,26 @@ Route::middleware('auth')->get('/dashboard', function () {
     };
 })->name('dashboard');
 
+
 // Dashboard tiap role
-Route::middleware(['auth', 'role:admin'])->get('/dashboard/admin', [DashboardController::class, 'admin'])->name('dashboard.admin');
-Route::middleware(['auth', 'role:staff'])->get('/dashboard/staff', [DashboardController::class, 'staff'])->name('dashboard.staff');
-Route::middleware(['auth', 'role:driver'])->get('/dashboard/driver', [DashboardController::class, 'driver'])->name('dashboard.driver');
-Route::middleware(['auth', 'role:guide'])->get('/dashboard/guide', [DashboardController::class, 'guide'])->name('dashboard.guide');
+Route::middleware(['auth:sanctum', 'role:admin'])->get('/dashboard/admin', [DashboardController::class, 'admin'])->name('dashboard.admin');
+Route::middleware(['auth:sanctum', 'role:staff'])->get('/dashboard/staff', [DashboardController::class, 'staff'])->name('dashboard.staff');
+Route::middleware(['auth:sanctum', 'role:driver'])->get('/dashboard/driver', [DashboardController::class, 'driver'])->name('dashboard.driver');
+Route::middleware(['auth:sanctum', 'role:guide'])->get('/dashboard/guide', [DashboardController::class, 'guide'])->name('dashboard.guide');
 
 
 // ====================================================================
 // Users
 // ====================================================================
-Route::middleware('auth')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/profile', [UserController::class, 'showProfile'])->name('profile');
     Route::post('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
 
-
     Route::middleware('role:admin')->group(function () {
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
-
         Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
-
         Route::post('/users', [UserController::class, 'store'])->name('users.store');
         Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
     });
@@ -74,7 +75,7 @@ Route::middleware('auth')->group(function () {
 // ====================================================================
 // Customers
 // ====================================================================
-Route::prefix('customers')->name('customers.')->middleware('auth')->group(function () {
+Route::prefix('customers')->name('customers.')->middleware('auth:sanctum')->group(function () {
     Route::middleware('role:admin|staff')->group(function () {
         Route::get('create', [CustomerController::class, 'create'])->name('create');
         Route::post('/', [CustomerController::class, 'store'])->name('store');
@@ -93,7 +94,7 @@ Route::prefix('customers')->name('customers.')->middleware('auth')->group(functi
 // ====================================================================
 // Vehicles
 // ====================================================================
-Route::prefix('vehicles')->name('vehicles.')->middleware('auth')->group(function () {
+Route::prefix('vehicles')->name('vehicles.')->middleware('auth:sanctum')->group(function () {
     Route::middleware('role:admin|staff')->group(function () {
         Route::get('create', [VehicleController::class, 'create'])->name('create');
         Route::post('/', [VehicleController::class, 'store'])->name('store');
@@ -111,7 +112,7 @@ Route::prefix('vehicles')->name('vehicles.')->middleware('auth')->group(function
 // ====================================================================
 // Orders
 // ====================================================================
-Route::prefix('orders')->name('orders.')->middleware('auth')->group(function () {
+Route::prefix('orders')->name('orders.')->middleware('auth:sanctum')->group(function () {
     Route::middleware('role:admin|staff')->group(function () {
         Route::post('/', [OrderController::class, 'store'])->name('store');
         Route::get('create', [OrderController::class, 'create'])->name('create');
@@ -130,7 +131,7 @@ Route::prefix('orders')->name('orders.')->middleware('auth')->group(function () 
 // ====================================================================
 // Assignments
 // ====================================================================
-Route::prefix('assignments')->name('assignments.')->middleware('auth')->group(function () {
+Route::prefix('assignments')->name('assignments.')->middleware('auth:sanctum')->group(function () {
     Route::middleware('role:admin|staff')->group(function () {
         Route::get('create', [AssignmentController::class, 'create'])->name('create');
         Route::post('/', [AssignmentController::class, 'store'])->name('store');
@@ -140,6 +141,8 @@ Route::prefix('assignments')->name('assignments.')->middleware('auth')->group(fu
         
         Route::get('chart', [AssignmentController::class, 'chartView'])->name('chart');
         Route::get('chart-data', [AssignmentController::class, 'chartData'])->name('chart.data');
+        Route::get('assignments/user-hours', [AssignmentController::class, 'userHours'])
+            ->name('user_hours'); 
     });
 
     Route::middleware('role:admin|staff|driver|guide')->group(function () {
@@ -151,7 +154,7 @@ Route::prefix('assignments')->name('assignments.')->middleware('auth')->group(fu
 // ====================================================================
 // Work Sessions (jam kerja driver/guide)
 // ====================================================================
-Route::prefix('work-sessions')->name('work-sessions.')->middleware('auth')->group(function () {
+Route::prefix('work-sessions')->name('work-sessions.')->middleware('auth:sanctum')->group(function () {
     Route::middleware('role:driver|guide')->group(function () {
         Route::get('create', [WorkSessionController::class, 'create'])->name('create');
         Route::post('/', [WorkSessionController::class, 'store'])->name('store');
@@ -171,7 +174,7 @@ Route::prefix('work-sessions')->name('work-sessions.')->middleware('auth')->grou
 // ====================================================================
 // Notifications
 // ====================================================================
-Route::prefix('notifications')->name('notifications.')->middleware('auth')->group(function () {
+Route::prefix('notifications')->name('notifications.')->middleware('auth:sanctum')->group(function () {
     Route::middleware('role:admin|staff|driver|guide')->group(function () {
         Route::get('/', [NotificationController::class, 'index'])->name('index');
         Route::get('{notification}', [NotificationController::class, 'show'])->name('show');
@@ -184,11 +187,8 @@ Route::prefix('notifications')->name('notifications.')->middleware('auth')->grou
 // ====================================================================
 // Tracking (driver locations) - untuk real-time tracking
 // ====================================================================
-Route::prefix('tracking')->name('tracking.')->middleware('auth')->group(function () {
+Route::prefix('tracking')->name('tracking.')->middleware('auth:sanctum')->group(function () {
     Route::middleware('role:driver|guide')->group(function () {
-        Route::post('/tracking/{workSession}', [TrackingController::class, 'store'])
-        ->middleware('auth')
-        ->name('tracking.store');
-
+        Route::post('/tracking/{workSession}', [TrackingController::class, 'store'])->name('tracking.store');
     });
 });

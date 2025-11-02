@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,49 +13,35 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Admin
-        User::create([
-            'name' => 'Admin Master',
-            'email' => 'admin@example.com',
-            'password' => Hash::make('password'), // ganti di production
-            'phone' => '081234567890',
-            'role' => 'admin',
-            'is_active' => true,
-        ]);
+        // Non-aktifkan FK checks DB (MySQL). Gunakan try/finally supaya selalu di-enable kembali.
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        } else {
+            // fallback portable untuk driver lain (SQLite)
+            Schema::disableForeignKeyConstraints();
+        }
 
-        // Staff
-        User::create([
-            'name' => 'Staff Transport',
-            'email' => 'staff@example.com',
-            'password' => Hash::make('password'),
-            'phone' => '081234567891',
-            'role' => 'staff',
-            'is_active' => true,
-        ]);
-
-        // Driver
-        User::create([
-            'name' => 'Driver One',
-            'email' => 'driver@example.com',
-            'password' => Hash::make('password'),
-            'phone' => '081234567892',
-            'role' => 'driver',
-            'is_active' => true,
-        ]);
-
-        // Guide
-        User::create([
-            'name' => 'Guide One',
-            'email' => 'guide@example.com',
-            'password' => Hash::make('password'),
-            'phone' => '081234567893',
-            'role' => 'guide',
-            'is_active' => true,
-        ]);
-
-        $this->call([
-        VehicleSeeder::class,
-        CustomerSeeder::class,
-    ]);
+        try {
+            // Panggil semua seeder (urutkan jika perlu)
+            $this->call([
+                // PasswordResetTokensSeeder::class,
+                // SessionsSeeder::class,
+                UsersTableSeeder::class,
+                // CustomersTableSeeder::class,
+                VehiclesTableSeeder::class,
+                // OrdersTableSeeder::class,
+                // AssignmentsTableSeeder::class,
+                // WorkSessionsTableSeeder::class,
+                // DriverLocationsTableSeeder::class,
+                // NotificationsTableSeeder::class,
+            ]);
+        } finally {
+            // Aktifkan kembali FK checks
+            if (DB::getDriverName() === 'mysql') {
+                DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            } else {
+                Schema::enableForeignKeyConstraints();
+            }
+        }
     }
 }
